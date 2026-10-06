@@ -1,0 +1,30 @@
+■ 프로토타입 실행 방법
+
+1. 아래 4개/폴더가 같은 폴더 안에 있어야 합니다.
+   - app.py
+   - requirements.txt
+   - fonts/ (폴더, 안에 NanumGothic.ttf, NanumGothicBold.ttf 포함) ← PDF 한글 출력에 필요
+   - 심사청구_더미데이터_2026상반기.xlsx (테스트용 더미 데이터)
+
+2. 파이썬(3.9 이상)이 설치되어 있어야 합니다.
+
+3. 터미널(명령 프롬프트)에서 그 폴더로 이동한 뒤:
+
+   pip install -r requirements.txt
+   streamlit run app.py
+
+4. 자동으로 브라우저가 열립니다 (안 열리면 http://localhost:8501 접속).
+   왼쪽에서 "심사청구_더미데이터_2026상반기.xlsx" 파일을 업로드하면
+   자동으로 통계 요약, 자동 인사이트 문장, 차트, Excel/PDF 보고서 다운로드가 나타납니다.
+
+■ v2에서 추가된 것
+- 자동 인사이트 문장 (전월 대비 증감, 최고/최저 월, 조정삭감률 높은 진료과 등을 문장으로 자동 요약)
+- PDF 요약 보고서 다운로드 (한글 폰트 포함, 인쇄/공유용)
+- 월별 추이 차트를 이중축(청구건수 막대 + 조정삭감률 선)으로 깔끔하게 정리
+
+■ 나중에 실제 병원 데이터로 바꿀 때 수정할 부분
+- app.py 상단의 REQUIRED_COLUMNS: 실제 컬럼명으로 교체
+- validate() 함수: 실제 데이터의 검증 규칙에 맞게 조정
+- monthly_summary / dept_summary / result_summary / reason_summary: 실제로 필요한 통계 항목으로 교체
+- generate_insights(): 실제로 병원에서 중요하게 보는 지표에 맞춰 문장 로직 수정
+- build_excel_report() / build_pdf_report(): 실제 병원에서 쓰던 보고서 양식(시트/구성 순서)에 맞춰 조정
