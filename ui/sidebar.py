@@ -4,7 +4,7 @@ import io
 import streamlit as st
 
 import config
-from core import monthly, quality, settings
+from core import check, monthly, quality, settings
 from core.view import View
 from reports import excel_report, html_report
 
@@ -42,6 +42,19 @@ def _options(saved: dict, months: list):
     return month, new
 
 
+def _data_check(df) -> None:
+    """데이터 점검: 프로그램이 쓰는 항목을 엑셀에서 찾았는지. 못 찾은 게 있으면 펼쳐서 보여줍니다."""
+    items = check.check(df)
+    missing = [i for i in items if not i.found]
+    title = f"🔍 데이터 점검 · {len(items) - len(missing)}/{len(items)} 항목 찾음" + (" ⚠" if missing else " ✅")
+    with st.expander(title, expanded=bool(missing)):
+        if not missing:
+            st.caption("프로그램이 쓰는 항목을 모두 찾았습니다.")
+            return
+        st.caption("아래 항목을 엑셀에서 찾지 못했습니다. 엑셀의 항목 이름을 맞추거나 config.py 의 이름을 고치면 됩니다.")
+        st.dataframe([{"어디서": i.where, "찾는 이름": i.path} for i in missing], hide_index=True)
+
+
 def render() -> View | None:
     """사이드바를 그리고 지금 보고 있는 조건(View)을 돌려줍니다. 파일이 없으면 None."""
     with st.sidebar:
@@ -54,8 +67,15 @@ def render() -> View | None:
         name, data = picked
         try:
             df = _load(data)
-        except Exception:  # 양식이 다른 파일 등
-            st.error(f"'{name}'을(를) 읽을 수 없습니다. '{config.MONTHLY_SHEET}' 시트가 있는지 확인하세요.")
+        except ValueError as err:  # 월별 통계표 시트를 못 찾음
+            st.error(f"'{name}': {err}")
+            return None
+        except Exception as err:  # 엑셀이 아니거나 깨진 파일 등
+            st.error(f"'{name}'을(를) 읽을 수 없습니다. ({type(err).__name__}) 엑셀(.xlsx) 파일인지 확인하세요.")
+            return None
+        if df.attrs.get("no_values"):
+            st.error("숫자가 하나도 읽히지 않았습니다. 엑셀에서 파일을 열어 **저장**한 뒤 다시 올려 주세요. "
+                     "(수식 결과가 저장되지 않은 파일일 수 있습니다)")
             return None
         # 0이 나올 수 없는 항목이 0인 칸 → '미입력 의심'으로 표시하고 그래프에서는 빈칸 처리
         df = quality.blank_suspects(df, quality.find_suspects(df, config.NEVER_ZERO))
@@ -63,7 +83,8 @@ def render() -> View | None:
         if not all_months:
             st.error("값이 들어 있는 달이 없습니다.")
             return None
-        st.caption(f"{name} · {all_months[0]} ~ {all_months[-1]}")
+        st.caption(f"{name} · 시트 '{df.attrs.get('sheet', '')}' · {all_months[0]} ~ {all_months[-1]}")
+        _data_check(df)
         month, opts = _options(settings.load(config.SETTINGS_PATH), all_months)
     return View(df=df, month=month, months=monthly.recent_months(df, month, opts["span"]),
                 bed_target=opts["bed_target"], warn_pct=opts["warn_pct"], file_name=name, settings=opts)

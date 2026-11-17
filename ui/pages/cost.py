@@ -124,6 +124,6 @@ def render(v: View) -> None:
     for (left_fn, left_args), (right_fn, right_args) in pairs:
         left, right = st.columns(2)
         with left.container(border=True):
-            left_fn(*left_args)
+            theme.safe(left_fn, *left_args)
         with right.container(border=True):
-            right_fn(*right_args)
+            theme.safe(right_fn, *right_args)

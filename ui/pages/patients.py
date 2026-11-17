@@ -67,15 +67,15 @@ def render(v: View) -> None:
 
     left, right = st.columns(2)
     with left.container(border=True):
-        _inpatients(df, months, x)
+        theme.safe(_inpatients, df, months, x)
     with right.container(border=True):
-        _bed_rate(df, months, x, v.bed_target / 100)
+        theme.safe(_bed_rate, df, months, x, v.bed_target / 100)
 
     left, right = st.columns(2)
     with left.container(border=True):
-        _admissions(df, months, x)
+        theme.safe(_admissions, df, months, x)
     with right.container(border=True):
-        _patient_groups(df, months, x)
+        theme.safe(_patient_groups, df, months, x)
 
     with st.container(border=True):
-        _detail_table(df, months)
+        theme.safe(_detail_table, df, months)

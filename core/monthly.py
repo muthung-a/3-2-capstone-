@@ -10,7 +10,6 @@
 """
 import re
 from datetime import datetime
-from pathlib import Path
 
 import pandas as pd
 from openpyxl import load_workbook
@@ -74,19 +73,51 @@ def _pseudonymize(labels: list[list[str]]) -> None:
                     row[level] = names[name]
 
 
-def load_monthly(path: str | Path, sheet: str = config.MONTHLY_SHEET) -> pd.DataFrame:
-    """엑셀 파일의 월별 통계표 시트를 읽어 표로 돌려줍니다."""
+def _date_columns(row) -> list[int]:
+    """한 줄에서 날짜가 들어 있는 칸 번호들."""
+    return [i for i, v in enumerate(row or ()) if isinstance(v, datetime)]
+
+
+def find_monthly_sheet(wb, preferred: str = config.MONTHLY_SHEET) -> str:
+    """월별 통계표 시트 이름을 찾습니다.
+
+    preferred 이름의 시트가 있으면 그것을, 없으면 '1행에 날짜가 가장 많은 시트'(3개 이상)를 고릅니다.
+    → 병원 실제 파일의 시트 이름이 'Sample data' 가 아니어도 읽을 수 있습니다.
+    """
+    if preferred in wb.sheetnames:
+        return preferred
+    best, best_n = None, 2
+    for ws in wb.worksheets:
+        first = next(ws.iter_rows(max_row=1, values_only=True), ())
+        n = len(_date_columns(first))
+        if n > best_n:
+            best, best_n = ws.title, n
+    if best is None:
+        raise ValueError("월별 통계표 시트를 찾지 못했습니다. (1행에 월별 날짜가 3개 이상 있는 시트가 없음)")
+    return best
+
+
+def load_monthly(path, sheet: str = config.MONTHLY_SHEET) -> pd.DataFrame:
+    """엑셀 파일의 월별 통계표 시트를 읽어 표로 돌려줍니다.
+
+    표의 attrs 에 부가 정보를 남깁니다:
+      attrs["sheet"] = 실제로 읽은 시트 이름
+      attrs["no_values"] = True 이면 숫자가 하나도 없음 (수식 결과가 저장되지 않은 파일일 수 있음)
+    """
     wb = load_workbook(path, read_only=True, data_only=True)
     try:
-        rows = [list(r) for r in wb[sheet].iter_rows(values_only=True)]
+        used = find_monthly_sheet(wb, sheet)
+        rows = [list(r) for r in wb[used].iter_rows(values_only=True)]
     finally:
         wb.close()
 
     header = rows[0]
-    month_cols = [i for i, v in enumerate(header) if isinstance(v, datetime)]
-    body = [r for r in rows[_FIRST_DATA_ROW - 1:] if any(clean_label(v) for v in r[:_N_LABELS])]
+    month_cols = _date_columns(header)
+    n_labels = max(1, min(month_cols[0], _N_LABELS))  # 날짜 열 앞까지가 항목 이름 (최대 5단계)
+    pad = [None] * (_N_LABELS - n_labels)
+    body = [r for r in rows[_FIRST_DATA_ROW - 1:] if any(clean_label(v) for v in r[:n_labels])]
 
-    labels = _fill_labels(body)
+    labels = _fill_labels([list(r[:n_labels]) + pad for r in body])
     _pseudonymize(labels)
 
     months = [pd.Timestamp(header[i]).to_period("M") for i in month_cols]
@@ -94,6 +125,8 @@ def load_monthly(path: str | Path, sheet: str = config.MONTHLY_SHEET) -> pd.Data
 
     df = pd.concat([pd.DataFrame(labels, columns=LABEL_COLS),
                     pd.DataFrame(values, columns=months)], axis=1)
+    df.attrs["sheet"] = used
+    df.attrs["no_values"] = bool(df[months].isna().all().all()) if months else True
     return df
 
 

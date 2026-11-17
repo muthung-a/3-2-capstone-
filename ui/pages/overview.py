@@ -90,12 +90,12 @@ def _favorites(v: View) -> None:
             shown[col] = shown[col].map(lambda x: kpi.format_value(x, "number"))
         for col in ("전월 대비(%)", "전년 대비(%)"):
             shown[col] = shown[col].map(summary.fmt_p)
-        st.dataframe(shown.set_index("항목"), width="stretch")
+        st.dataframe(shown.set_index("항목"), width="stretch", key=theme.next_key("table"))
 
 
 def render(v: View) -> None:
     """개요 탭을 그립니다."""
-    _summary(v)
+    theme.safe(_summary, v)
     st.subheader(f"📌 {v.month.year}년 {v.month.month}월 핵심 지표")
     cards = kpi.build_kpis(v.df, v.month, config.KPIS)
     if not cards:
@@ -103,4 +103,4 @@ def render(v: View) -> None:
         return
     st.markdown('<div class="kpis">' + "".join(_card(k) for k in cards) + "</div>", unsafe_allow_html=True)
     st.caption("▲ 빨강 = 증가, ▼ 파랑 = 감소. 오른쪽 작은 선은 최근 13개월 추이입니다.")
-    _favorites(v)
+    theme.safe(_favorites, v)

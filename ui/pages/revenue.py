@@ -74,7 +74,7 @@ def _rehab_items(df, month) -> None:
     fig.update_yaxes(type="category", gridcolor="rgba(0,0,0,0)")
     ticks, text = revenue.money_ticks(list(s.values))
     fig.update_xaxes(tickvals=ticks, ticktext=text)
-    st.plotly_chart(fig, width="stretch", config=theme.CHART_CFG)
+    st.plotly_chart(fig, width="stretch", config=theme.CHART_CFG, key=theme.next_key("chart"))
 
 
 def _doctors(df, months, x) -> None:
@@ -121,14 +121,14 @@ def render(v: View) -> None:
     for (left_fn, left_args), (right_fn, right_args) in rows:
         left, right = st.columns(2)
         with left.container(border=True):
-            left_fn(*left_args)
+            theme.safe(left_fn, *left_args)
         with right.container(border=True):
-            right_fn(*right_args)
+            theme.safe(right_fn, *right_args)
 
     left, right = st.columns(2)
     with left.container(border=True):
-        _doctors(df, months, x)
+        theme.safe(_doctors, df, months, x)
     with right.container(border=True):
-        _etc_items(df, months, x)
+        theme.safe(_etc_items, df, months, x)
     with st.container(border=True):
-        _detail_table(df, months)
+        theme.safe(_detail_table, df, months)

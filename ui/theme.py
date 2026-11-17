@@ -125,7 +125,15 @@ CHART_CFG = {"displaylogo": False, "toImageButtonOptions": {"format": "png", "sc
 
 def apply() -> None:
     """추가 스타일을 화면에 적용합니다. app.py 에서 한 번 부릅니다."""
+    st.session_state["_element_no"] = 0  # 그래프·표 고유 번호를 매번 0부터
     st.markdown(_CSS, unsafe_allow_html=True)
+
+
+def next_key(prefix: str) -> str:
+    """그래프·표마다 고유 key. 내용이 똑같은 그래프(예: 빈 그래프 두 개)가 있어도 충돌하지 않게 합니다."""
+    n = st.session_state.get("_element_no", 0) + 1
+    st.session_state["_element_no"] = n
+    return f"{prefix}_{n}"
 
 
 def base_layout(fig, h=300, yfmt=None):
@@ -166,7 +174,7 @@ def show_chart(fig, h=300, yfmt=None, legend_right=False, money=False) -> None:
         fig.update_layout(legend=dict(orientation="v", x=1.01, y=1, traceorder="reversed"))
     if money:
         _money_axis(fig)
-    st.plotly_chart(fig, width="stretch", config=CHART_CFG)
+    st.plotly_chart(fig, width="stretch", config=CHART_CFG, key=next_key("chart"))
 
 
 def show_table(raw: pd.DataFrame, kinds: dict | str, filename: str) -> None:
@@ -180,13 +188,26 @@ def show_table(raw: pd.DataFrame, kinds: dict | str, filename: str) -> None:
         [[format_value(v, kinds if isinstance(kinds, str) else kinds.get(name, "money")) for v in row]
          for name, row in raw.iterrows()],
         index=raw.index, columns=[month_label(m) for m in raw.columns])
-    st.dataframe(shown, width="stretch")
+    st.dataframe(shown, width="stretch", key=next_key("table"))
     buf = io.BytesIO()
     out = raw.copy()
     out.columns = [str(c) for c in out.columns]
     out.to_excel(buf, sheet_name="통계")
     st.download_button("⬇ 엑셀로 받기", buf.getvalue(), file_name=f"{filename}.xlsx", key=f"dl_{filename}",
                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+
+def safe(fn, *args) -> None:
+    """그래프·표 하나를 그립니다. 엑셀에 필요한 항목이 없으면 화면 전체를 멈추지 않고 그 칸만 건너뜁니다.
+
+    (병원 실제 파일의 항목 이름이 조금 달라도 나머지 화면은 그대로 보이게 하기 위함)
+    """
+    try:
+        fn(*args)
+    except KeyError as err:
+        st.caption(f"⚠ {err.args[0] if err.args else err} — 이 칸은 건너뜁니다. (사이드바 '데이터 점검' 참고)")
+    except (ValueError, IndexError, TypeError) as err:
+        st.caption(f"⚠ 이 칸을 그리지 못했습니다 ({type(err).__name__}). 엑셀 양식을 확인하세요.")
 
 
 def panel_title(title: str, sub: str = "") -> None:
