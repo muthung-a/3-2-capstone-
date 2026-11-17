@@ -33,16 +33,19 @@
 
 ## 2. 설치 (처음 한 번만)
 
-1. **Python 3.12**를 설치합니다. (설치 화면에서 "Add python.exe to PATH" 체크)
-2. 이 폴더에서 PowerShell을 열고 아래 두 줄을 입력합니다.
+1. **Python 3.12**를 설치합니다. https://www.python.org/downloads/ (설치 첫 화면에서 "Add python.exe to PATH" 체크)
+2. **`설치.bat`을 더블클릭**합니다. → "설치 완료!"가 나오면 끝입니다. (처음에는 3~5분, **인터넷 필요**)
+   - 이 프로그램 전용 파이썬 공간(`.venv` 폴더)을 만들고, 필요한 패키지를 **정해진 버전 그대로** 설치합니다.
+   - 다시 실행해도 괜찮습니다. 이미 설치된 것은 건너뜁니다.
+   - 오류가 나면: 인터넷 연결 확인 → 병원 보안 프로그램이 막는지 전산 담당자에게 문의 → `.venv` 폴더를 지우고 다시 실행
+
+<details><summary>직접 명령어로 설치하려면 (개발자용)</summary>
 
 ```
 py -3.12 -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
 ```
-
-- 첫 줄: 이 프로그램 전용 파이썬 공간(`.venv` 폴더)을 만듭니다.
-- 둘째 줄: 필요한 패키지를 **정해진 버전 그대로** 설치합니다.
+</details>
 
 ## 3. 사용 방법
 
@@ -132,6 +135,7 @@ py -3.12 -m venv .venv
 ├─ .streamlit/         Streamlit 설정 (보안 · 색)
 ├─ CLAUDE.md           AI 도구가 지켜야 할 규칙
 ├─ requirements.txt    패키지 목록 (버전 고정)
+├─ 설치.bat            더블클릭 설치 (처음 한 번)
 └─ 실행.bat            더블클릭 실행
 ```
 

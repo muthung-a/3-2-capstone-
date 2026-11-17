@@ -2,7 +2,7 @@
 chcp 65001 >nul
 cd /d "%~dp0"
 if not exist ".venv\Scripts\python.exe" (
-    echo [오류] .venv 가상환경이 없습니다. README.md 의 "처음 한 번만 할 일"을 따라 하세요.
+    echo [오류] .venv 가상환경이 없습니다. 먼저 "설치.bat" 을 더블클릭해 설치하세요.
     pause
     exit /b 1
 )
