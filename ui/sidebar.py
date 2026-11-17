@@ -4,7 +4,7 @@ import io
 import streamlit as st
 
 import config
-from core import check, monthly, quality, settings
+from core import check, drugs, monthly, quality, settings
 from core.view import View
 from reports import excel_report, html_report
 
@@ -13,6 +13,15 @@ from reports import excel_report, html_report
 def _load(data: bytes):
     """엑셀 내용(bytes)을 표로 읽습니다. 같은 파일은 다시 읽지 않고 기억해 둡니다."""
     return monthly.load_monthly(io.BytesIO(data))
+
+
+@st.cache_data(show_spinner="약품 처방 시트 읽는 중…")
+def _load_drugs(data: bytes):
+    """약품 처방 원 데이터 시트들(6, 7 …)을 읽습니다. 없거나 양식이 다르면 None."""
+    try:
+        return drugs.load_drugs(io.BytesIO(data))
+    except Exception:  # 약품 시트는 없어도 나머지 화면은 그대로
+        return None
 
 
 def _pick_file():
@@ -87,7 +96,8 @@ def render() -> View | None:
         _data_check(df)
         month, opts = _options(settings.load(config.SETTINGS_PATH), all_months)
     return View(df=df, month=month, months=monthly.recent_months(df, month, opts["span"]),
-                bed_target=opts["bed_target"], warn_pct=opts["warn_pct"], file_name=name, settings=opts)
+                bed_target=opts["bed_target"], warn_pct=opts["warn_pct"], file_name=name, settings=opts,
+                drugs=_load_drugs(data))
 
 
 def render_exports(v: View) -> None:

@@ -86,13 +86,13 @@ def _pages_with_almost_empty_data():
     from core import monthly
     from core.view import View
     from ui import theme
-    from ui.pages import cost, custom, overview, patients, revenue
+    from ui.pages import cost, custom, drugs, overview, patients, revenue
     months = list(pd.period_range("2024-01", periods=13, freq="M"))
     labels = pd.DataFrame([["총진료비", "합계", "", "소계", ""]], columns=monthly.LABEL_COLS)
     df = pd.concat([labels, pd.DataFrame([[100.0] * 13], columns=months)], axis=1)
     v = View(df=df, month=months[-1], months=months[-6:], file_name="test.xlsx")
     theme.apply()
-    for page in (overview, patients, revenue, cost, custom):
+    for page in (overview, patients, revenue, cost, drugs, custom):
         page.render(v)
 
 

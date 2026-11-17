@@ -16,3 +16,4 @@ class View:
     warn_pct: float = 10.0    # 확인 필요 기준(±%)
     file_name: str = ""       # 불러온 파일 이름
     settings: dict = field(default_factory=dict)  # 저장된 사용자 설정 (즐겨찾기 등)
+    drugs: object = None      # 약품 처방 원 데이터 (core.drugs.Drugs). 약품 시트가 없으면 None

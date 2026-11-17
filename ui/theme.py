@@ -230,5 +230,7 @@ def header(v=None) -> None:
 
 
 def month_label(m) -> str:
-    """그래프 x축용 짧은 월 이름. 예) 2026-09 → '26.09'"""
+    """그래프 x축용 짧은 월 이름. 예) 2026-09 → '26.09'. 달 숫자(약품 시트 6, 7 …)는 '6월'."""
+    if isinstance(m, int):
+        return f"{m}월"
     return f"{m.year % 100}.{m.month:02d}"

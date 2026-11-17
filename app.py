@@ -7,7 +7,7 @@ import streamlit as st
 
 import config
 from ui import sidebar, theme
-from ui.pages import cost, custom, overview, patients, revenue
+from ui.pages import cost, custom, drugs, overview, patients, revenue
 
 # 탭 이름과 그 탭을 그리는 파일. 탭을 추가하려면 ui/pages/에 파일을 만들고 여기 한 줄 추가.
 # 순서 = 화면 순서. 자주 보는 탭을 앞에 두세요. (개요 탭 맨 위에 자동 요약이 나옵니다)
@@ -16,6 +16,7 @@ TABS = [
     ("🛏️ 환자·병상", patients),
     ("💰 수익", revenue),
     ("🧾 비용", cost),
+    ("💊 약품", drugs),
     ("🧩 사용자 정의 통계", custom),
 ]
 
