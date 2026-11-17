@@ -39,9 +39,12 @@ def _pick_file():
 def _options(saved: dict, months: list):
     """기준월·조회기간·적정선·경고 기준을 고르고, 바뀐 설정은 파일에 저장합니다."""
     st.markdown('<div class="side-h">조회 조건</div>', unsafe_allow_html=True)
-    month = st.selectbox("기준월", months[::-1], format_func=lambda m: f"{m.year}년 {m.month}월")
-    span = st.segmented_control("조회기간", config.SPAN_CHOICES, default=saved["span"],
-                                format_func=lambda n: f"{n}개월") or saved["span"]
+    month = st.selectbox("기준월 (분석할 달)", months[::-1], format_func=lambda m: f"{m.year}년 {m.month}월")
+    # 라디오 버튼: 항상 하나가 선택된 상태 (버튼식은 다시 누르면 선택이 풀려서 헷갈림)
+    choices = config.SPAN_CHOICES
+    span = st.radio("조회기간 (그래프·표에 보여줄 개월 수)", choices, horizontal=True,
+                    index=choices.index(saved["span"]) if saved["span"] in choices else 0,
+                    format_func=lambda n: f"{n}개월")
     st.markdown('<div class="side-h">환경설정</div>', unsafe_allow_html=True)
     bed = st.number_input("병상가동율 적정선(%)", 50.0, 100.0, float(saved["bed_target"]), 0.5)
     warn = st.number_input("확인 필요 기준 (12개월 평균 대비 ±%)", 1.0, 100.0, float(saved["warn_pct"]), 1.0)

@@ -75,8 +75,8 @@ def render(v: View) -> None:
         return
     st.caption("시트 이름(6~11)을 달로 봅니다. 연도는 시트에 없어서 사이드바 기준월과는 따로 고릅니다. "
                "약품 이름이 없는 줄은 엑셀의 구역 소계라 계산에서 빼고 검산에만 씁니다.")
-    month = st.segmented_control("볼 달", d.months, default=d.months[-1], format_func=theme.month_label,
-                                 key="drug_month") or d.months[-1]
+    month = st.radio("볼 달", d.months, index=len(d.months) - 1, horizontal=True,
+                     format_func=theme.month_label, key="drug_month")
     theme.safe(_cards, d, month)
     left, right = st.columns([1.4, 1])
     with left.container(border=True):
