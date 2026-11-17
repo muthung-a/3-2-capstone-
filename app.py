@@ -21,14 +21,15 @@ TABS = [
 ]
 
 
-def main() -> None:
+def main(demo: bool = False) -> None:
+    """화면 전체. demo=True 는 인터넷 시연판(demo_app.py): 가상 데이터만, 파일 올리기 없음."""
     st.set_page_config(page_title=config.APP_TITLE, page_icon=config.APP_ICON, layout="wide")
     theme.apply()
-    view = sidebar.render()  # 지금 보고 있는 조건(파일·기준월·조회기간·적정선) 또는 None
+    view = sidebar.render(demo)  # 지금 보고 있는 조건(파일·기준월·조회기간·적정선) 또는 None
 
     theme.header(view)  # 맨 위 배너
     if view is None:
-        st.info("왼쪽 사이드바에서 엑셀 파일을 올리거나 선택하세요.")
+        st.info("왼쪽 사이드바에서 월별 통계표 엑셀 파일을 올려 주세요.")
         return
     sidebar.render_exports(view)  # 사이드바 아래: 엑셀·인쇄용 보고서 내보내기
     tab_objects = st.tabs([name for name, _ in TABS])
@@ -37,4 +38,5 @@ def main() -> None:
             page.render(view)
 
 
-main()
+if __name__ == "__main__":  # streamlit run app.py 로 실행할 때
+    main()

@@ -88,6 +88,7 @@ h3 { font-size: 1.1rem !important; font-weight: 600 !important; color: #111827; 
 .chip { font-size:12px; padding:4px 11px; border-radius:9999px; background:rgba(255,255,255,.14);
   border:1px solid rgba(255,255,255,.28); white-space:nowrap; }
 .chip.ok { background:rgba(16,185,129,.28); border-color:rgba(110,231,183,.6); }
+.chip.demo { background:rgba(245,158,11,.35); border-color:rgba(252,211,77,.7); font-weight:600; }
 
 /* 사이드바 로고 */
 .brand { display:flex; align-items:center; gap:10px; margin: 0 0 14px; }
@@ -223,7 +224,10 @@ def header(v=None) -> None:
         chips = (f'<span class="chip">기준월 {v.month.year}.{v.month.month:02d}</span>'
                  f'<span class="chip">조회 {month_label(v.months[0])} ~ {month_label(v.months[-1])}</span>'
                  f'<span class="chip">📄 {escape(v.file_name)}</span>')
-    chips += '<span class="chip ok">🔒 로컬 전용 · 외부 전송 없음</span>'
+    if v is not None and v.demo:
+        chips += '<span class="chip demo">🎬 시연용 · 가상 데이터</span>'
+    else:
+        chips += '<span class="chip ok">🔒 로컬 전용 · 외부 전송 없음</span>'
     st.markdown(f'<div class="hero"><div><div class="t">📊 경영통계 대시보드</div>'
                 f'<div class="sub">요양병원 월별 경영 통계 · 자동 요약 · 보고서</div></div>'
                 f'<div class="chips">{chips}</div></div>', unsafe_allow_html=True)

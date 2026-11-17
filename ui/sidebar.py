@@ -4,7 +4,7 @@ import io
 import streamlit as st
 
 import config
-from core import check, drugs, monthly, quality, settings
+from core import check, drugs, monthly, quality, sample, settings
 from core.view import View
 from reports import excel_report, html_report
 
@@ -24,20 +24,25 @@ def _load_drugs(data: bytes):
         return None
 
 
+@st.cache_data(show_spinner="시연용 가상 데이터 만드는 중…")
+def _demo_file() -> bytes:
+    """시연 모드용 가짜 엑셀 (core/sample.py). 개인 정보 형태 없음."""
+    return sample.build_workbook()
+
+
 def _pick_file():
-    """업로드한 파일이 있으면 그것을, 없으면 data/ 폴더의 파일을 고르게 합니다."""
+    """올린 엑셀 파일 (이름, 내용). 아직 안 올렸으면 None.
+
+    파일은 화면에서 올린 것만 씁니다. (폴더에 둔 엑셀을 자동으로 읽지 않음 → 어떤 파일을 쓰는지 사용자가 직접 고름)
+    """
     uploaded = st.file_uploader("엑셀 파일 올리기", type=["xlsx"])
-    if uploaded is not None:
-        return uploaded.name, uploaded.getvalue()
-    files = sorted(config.DATA_DIR.glob("*.xlsx"))
-    if not files:
+    if uploaded is None:
         return None
-    path = st.selectbox("또는 data 폴더에서 선택", files, format_func=lambda p: p.name)
-    return path.name, path.read_bytes()
+    return uploaded.name, uploaded.getvalue()
 
 
-def _options(saved: dict, months: list):
-    """기준월·조회기간·적정선·경고 기준을 고르고, 바뀐 설정은 파일에 저장합니다."""
+def _options(saved: dict, months: list, demo: bool = False):
+    """기준월·조회기간·적정선·경고 기준을 고르고, 바뀐 설정은 파일에 저장합니다. (시연 모드는 저장 안 함)"""
     st.markdown('<div class="side-h">조회 조건</div>', unsafe_allow_html=True)
     month = st.selectbox("기준월 (분석할 달)", months[::-1], format_func=lambda m: f"{m.year}년 {m.month}월")
     # 라디오 버튼: 항상 하나가 선택된 상태 (버튼식은 다시 누르면 선택이 풀려서 헷갈림)
@@ -49,7 +54,7 @@ def _options(saved: dict, months: list):
     bed = st.number_input("병상가동율 적정선(%)", 50.0, 100.0, float(saved["bed_target"]), 0.5)
     warn = st.number_input("확인 필요 기준 (12개월 평균 대비 ±%)", 1.0, 100.0, float(saved["warn_pct"]), 1.0)
     new = dict(saved, span=span, bed_target=bed, warn_pct=warn)
-    if new != saved:
+    if new != saved and not demo:  # 시연판은 여러 사람이 함께 보므로 서버에 설정을 저장하지 않음
         settings.save(config.SETTINGS_PATH, new)
     return month, new
 
@@ -67,12 +72,19 @@ def _data_check(df) -> None:
         st.dataframe([{"어디서": i.where, "찾는 이름": i.path} for i in missing], hide_index=True)
 
 
-def render() -> View | None:
-    """사이드바를 그리고 지금 보고 있는 조건(View)을 돌려줍니다. 파일이 없으면 None."""
+def render(demo: bool = False) -> View | None:
+    """사이드바를 그리고 지금 보고 있는 조건(View)을 돌려줍니다. 파일이 없으면 None.
+
+    demo=True (시연판): 파일 올리기 칸 없이 가짜 데이터로 바로 엽니다. 실제 데이터가 들어올 길을 막기 위함.
+    """
     with st.sidebar:
         st.markdown('<div class="brand"><i>📊</i><div><b>경영통계</b><span>요양병원 월별 통계 자동화</span>'
                     '</div></div><div class="side-h">데이터</div>', unsafe_allow_html=True)
-        picked = _pick_file()
+        if demo:
+            st.info("🎬 **시연용** · 코드로 만든 가상 데이터입니다.\n\n실제 병원 데이터는 올릴 수 없습니다.")
+            picked = ("시연용_가상데이터.xlsx", _demo_file())
+        else:
+            picked = _pick_file()
         if picked is None:
             st.caption(f"버전 {config.VERSION}")
             return None
@@ -97,10 +109,11 @@ def render() -> View | None:
             return None
         st.caption(f"{name} · 시트 '{df.attrs.get('sheet', '')}' · {all_months[0]} ~ {all_months[-1]}")
         _data_check(df)
-        month, opts = _options(settings.load(config.SETTINGS_PATH), all_months)
+        saved = dict(settings.DEFAULTS, favorites=[]) if demo else settings.load(config.SETTINGS_PATH)
+        month, opts = _options(saved, all_months, demo)
     return View(df=df, month=month, months=monthly.recent_months(df, month, opts["span"]),
                 bed_target=opts["bed_target"], warn_pct=opts["warn_pct"], file_name=name, settings=opts,
-                drugs=_load_drugs(data))
+                drugs=_load_drugs(data), demo=demo)
 
 
 def render_exports(v: View) -> None:
@@ -114,5 +127,8 @@ def render_exports(v: View) -> None:
                            f"경영통계보고서_{stamp}.html", "text/html", width="stretch",
                            help="받은 파일을 열고 [인쇄] → 'PDF로 저장'을 고르면 PDF가 됩니다.")
         st.caption("그래프는 오른쪽 위 📷 아이콘으로 이미지(PNG) 저장")
-        st.info("🔒 이 PC 안에서만 처리 · 외부 전송 없음\n\n생성형 AI에 병원 파일을 올리지 마세요.")
+        if v.demo:
+            st.info("🎬 시연판입니다. 병원에서는 PC 설치형(실행.bat)을 쓰며, 데이터는 PC 밖으로 나가지 않습니다.")
+        else:
+            st.info("🔒 이 PC 안에서만 처리 · 외부 전송 없음\n\n생성형 AI에 병원 파일을 올리지 마세요.")
         st.caption(f"버전 {config.VERSION}")

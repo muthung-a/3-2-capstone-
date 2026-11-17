@@ -47,6 +47,9 @@ def render(v: View) -> None:
         theme.panel_title("숫자 표", "엑셀로 받으면 원래 숫자가 들어갑니다")
         theme.show_table(frame, "number", f"사용자정의통계_{v.month}")
 
+    if v.demo:
+        st.caption("시연판에서는 즐겨찾기를 저장하지 않습니다. (여러 사람이 함께 보는 화면)")
+        return
     left, right = st.columns(2)
     add = [c for c in chosen if c not in favs]
     if left.button(f"⭐ 고른 항목 즐겨찾기에 추가 ({len(add)}개)", disabled=not add, type="primary"):

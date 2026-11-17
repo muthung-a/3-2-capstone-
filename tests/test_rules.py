@@ -51,3 +51,11 @@ def test_every_page_has_render():
         tree = ast.parse(path.read_text(encoding="utf-8"))
         names = {n.name for n in tree.body if isinstance(n, ast.FunctionDef)}
         assert "render" in names, f"{path.name}: render() 함수가 필요합니다"
+
+
+def test_bat_files_are_ascii_with_crlf():
+    """.bat 파일에 한글이 있으면 Windows 명령 창이 줄을 잘못 읽어 엉뚱한 오류가 납니다. 안내는 scripts/install.py 가 출력."""
+    for path in ROOT.glob("*.bat"):
+        data = path.read_bytes()
+        assert data.isascii(), f"{path.name}: .bat 파일에는 영문·숫자만 쓰세요"
+        assert b"\r\n" in data and b"\n" not in data.replace(b"\r\n", b""), f"{path.name}: 줄바꿈은 CRLF 여야 합니다"

@@ -101,9 +101,34 @@ def test_pages_survive_missing_items():
     assert not at.exception, [e.value for e in at.exception]
 
 
-def test_whole_app_runs_on_sample():
-    if not sorted(config.DATA_DIR.glob("*.xlsx")):
-        pytest.skip("data/ 폴더에 엑셀이 없습니다")
+def test_app_without_file_shows_guide():
+    """파일을 올리기 전: 오류 없이 '엑셀을 올리세요' 안내만 나옵니다."""
     at = AppTest.from_file(str(config.BASE_DIR / "app.py"), default_timeout=120).run()
     assert not at.exception, [e.value for e in at.exception]
-    assert len(at.tabs) >= 5
+    assert any("엑셀 파일을 올려" in i.value for i in at.info)
+    assert len(at.tabs) == 0
+
+
+def _all_pages_with_sample():
+    """파일을 올린 뒤와 같은 과정(읽기 → 미입력 처리 → 약품)으로 모든 탭을 그립니다. (AppTest 안에서 실행)"""
+    import config
+    from core import drugs, monthly, quality
+    from core.view import View
+    from ui import theme
+    from ui.pages import cost, custom, drugs as drug_page, overview, patients, revenue
+    path = sorted(config.DATA_DIR.glob("*.xlsx"))[0]
+    df = monthly.load_monthly(path)
+    df = quality.blank_suspects(df, quality.find_suspects(df, config.NEVER_ZERO))
+    month = monthly.available_months(df)[-1]
+    v = View(df=df, month=month, months=monthly.recent_months(df, month, 6), file_name=path.name,
+             drugs=drugs.load_drugs(path))
+    theme.apply()
+    for page in (overview, patients, revenue, cost, drug_page, custom):
+        page.render(v)
+
+
+def test_all_pages_run_on_sample():
+    if not sorted(config.DATA_DIR.glob("*.xlsx")):
+        pytest.skip("data/ 폴더에 엑셀이 없습니다")
+    at = AppTest.from_function(_all_pages_with_sample, default_timeout=120).run()
+    assert not at.exception, [e.value for e in at.exception]
