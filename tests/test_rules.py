@@ -6,7 +6,7 @@ import ast
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKIP_DIRS = {".venv", "_기존_프로토타입", "__pycache__"}
+SKIP_DIRS = {".venv", "__pycache__"}
 MAX_LINES = 300
 
 

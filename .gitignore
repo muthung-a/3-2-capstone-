@@ -6,7 +6,6 @@ reports/output/
 *.xlsx
 *.xls
 *.csv
-_기존_프로토타입/
 user_settings.json
 .pytest_cache/
 .claude/
