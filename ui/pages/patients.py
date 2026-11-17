@@ -63,7 +63,7 @@ def render(v: View) -> None:
     """환자·병상 탭을 그립니다."""
     df, months = v.df, v.months
     x = [theme.month_label(m) for m in months]
-    st.subheader(f"환자 · 병상 ({theme.month_label(months[0])} ~ {theme.month_label(months[-1])})")
+    st.subheader(f"🛏️ 환자 · 병상 ({theme.month_label(months[0])} ~ {theme.month_label(months[-1])})")
 
     left, right = st.columns(2)
     with left.container(border=True):

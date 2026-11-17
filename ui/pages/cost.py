@@ -114,7 +114,7 @@ def render(v: View) -> None:
     """비용 탭을 그립니다."""
     df, month, months = v.df, v.month, v.months
     x = [theme.month_label(m) for m in months]
-    st.subheader(f"비용 ({x[0]} ~ {x[-1]})")
+    st.subheader(f"🧾 비용 ({x[0]} ~ {x[-1]})")
 
     pairs = [((_total_trend, (df, months, x)), (_share, (df, month))),
              ((_labor, (df, months, x)), (_overhead, (df, months, x))),

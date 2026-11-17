@@ -8,6 +8,12 @@ from core import custom, kpi, summary
 from core.view import View
 from ui import theme
 
+# KPI 카드별 아이콘과 포인트 색 (카드 이름 → (아이콘, 색)). 없는 카드는 기본 파랑.
+_STYLE = {
+    "월말 재원환자": ("🛏️", "#3b82f6"), "병상가동율": ("📈", "#10b981"), "실입원수": ("🚪", "#8b5cf6"),
+    "총진료비": ("💰", "#f59e0b"), "재활치료(급여)": ("🦽", "#06b6d4"), "인건비": ("👥", "#f43f5e"),
+}
+
 
 def _arrow(change: float, kind: str) -> str:
     """증감 ▲(빨강) ▼(파랑) 배지."""
@@ -21,8 +27,8 @@ def _arrow(change: float, kind: str) -> str:
     return f'<span class="fl">－ 0.0{unit}</span>'
 
 
-def _spark(values: list, w: int = 86, h: int = 26) -> str:
-    """최근 13개월 미니 추이 선 그래프(SVG)."""
+def _spark(values: list, color: str = theme.PRIMARY, w: int = 90, h: int = 30) -> str:
+    """최근 13개월 미니 추이 선 그래프(SVG). 선 아래를 옅게 칠합니다."""
     pts = [(i, v) for i, v in enumerate(values) if v == v]
     if len(pts) < 2:
         return ""
@@ -32,9 +38,11 @@ def _spark(values: list, w: int = 86, h: int = 26) -> str:
     xy = [(i * (w - 4) / (n - 1) + 2, h - 3 - (v - lo) / (hi - lo) * (h - 6)) for i, v in pts]
     line = " ".join(f"{x:.1f},{y:.1f}" for x, y in xy)
     lx, ly = xy[-1]
+    area = f"{xy[0][0]:.1f},{h} {line} {lx:.1f},{h}"
     return (f'<svg width="{w}" height="{h}" viewBox="0 0 {w} {h}" aria-hidden="true">'
-            f'<polyline points="{line}" fill="none" stroke="{theme.PRIMARY}" stroke-width="1.6"/>'
-            f'<circle cx="{lx:.1f}" cy="{ly:.1f}" r="2.6" fill="{theme.PRIMARY}"/></svg>')
+            f'<polygon points="{area}" fill="{color}" fill-opacity=".12"/>'
+            f'<polyline points="{line}" fill="none" stroke="{color}" stroke-width="1.8" stroke-linejoin="round"/>'
+            f'<circle cx="{lx:.1f}" cy="{ly:.1f}" r="2.8" fill="{color}"/></svg>')
 
 
 def _card(k: kpi.Kpi) -> str:
@@ -45,14 +53,16 @@ def _card(k: kpi.Kpi) -> str:
     else:
         value, warn = kpi.format_value(k.value, k.kind), ""
         change = f"전월 {_arrow(k.change, k.kind)}<br>전년 {_arrow(k.yoy_change, k.kind)}"
-    return (f'<div class="kpi{warn}"><div class="l">{escape(k.label)}</div>'
+    icon, color = _STYLE.get(k.label, ("📌", theme.PRIMARY))
+    return (f'<div class="kpi{warn}" style="--accent:{color};--tint:{color}1a">'
+            f'<div class="hd"><div class="l">{escape(k.label)}</div><div class="ic">{icon}</div></div>'
             f'<div class="v">{value}</div>'
-            f'<div class="s"><div class="c">{change}</div>{_spark(k.history)}</div></div>')
+            f'<div class="s"><div class="c">{change}</div>{_spark(k.history, color)}</div></div>')
 
 
 def _summary(v: View) -> None:
     left, right = st.columns([1.75, 1])
-    with left.container(border=True, height=250):
+    with left.container(border=True, height=250, key="summary_box"):
         theme.panel_title(f"자동 요약 — {v.month.year}년 {v.month.month}월",
                           f"비교: 전월 {v.month - 1} · 전년 동월 {v.month - 12}")
         lines = summary.summary_lines(v.df, v.month)  # 숫자·고정 문구만 들어 있어 안전한 HTML
@@ -63,7 +73,7 @@ def _summary(v: View) -> None:
         n = sum(1 for a in items if a.level != "g")
         theme.panel_title("확인 필요 항목", f"{n}건 · 기준 ±{v.warn_pct:.0f}%")
         st.markdown('<ul class="alerts">' + "".join(
-            f'<li><span class="badge {a.level}">{escape(a.badge)}</span><span>{escape(a.text)}</span></li>'
+            f'<li class="{a.level}"><span class="badge {a.level}">{escape(a.badge)}</span><span>{escape(a.text)}</span></li>'
             for a in items) + "</ul>", unsafe_allow_html=True)
 
 
@@ -86,7 +96,7 @@ def _favorites(v: View) -> None:
 def render(v: View) -> None:
     """개요 탭을 그립니다."""
     _summary(v)
-    st.subheader(f"{v.month.year}년 {v.month.month}월 핵심 지표")
+    st.subheader(f"📌 {v.month.year}년 {v.month.month}월 핵심 지표")
     cards = kpi.build_kpis(v.df, v.month, config.KPIS)
     if not cards:
         st.warning("KPI 항목을 찾지 못했습니다. config.py 의 KPIS 이름을 확인하세요.")

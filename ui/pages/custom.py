@@ -21,7 +21,7 @@ def _save_favorites(v: View, favs: list[str]) -> None:
 
 def render(v: View) -> None:
     """사용자 정의 통계 탭을 그립니다."""
-    st.subheader("사용자 정의 통계")
+    st.subheader("🧩 사용자 정의 통계")
     labels = list(custom.row_labels(v.df))
     favs = [f for f in v.settings.get("favorites", []) if f in labels]
     with st.container(border=True):

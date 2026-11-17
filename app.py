@@ -12,11 +12,11 @@ from ui.pages import cost, custom, overview, patients, revenue
 # 탭 이름과 그 탭을 그리는 파일. 탭을 추가하려면 ui/pages/에 파일을 만들고 여기 한 줄 추가.
 # 순서 = 화면 순서. 자주 보는 탭을 앞에 두세요. (개요 탭 맨 위에 자동 요약이 나옵니다)
 TABS = [
-    ("개요", overview),
-    ("환자·병상", patients),
-    ("수익", revenue),
-    ("비용", cost),
-    ("사용자 정의 통계", custom),
+    ("🏠 개요", overview),
+    ("🛏️ 환자·병상", patients),
+    ("💰 수익", revenue),
+    ("🧾 비용", cost),
+    ("🧩 사용자 정의 통계", custom),
 ]
 
 
@@ -25,7 +25,7 @@ def main() -> None:
     theme.apply()
     view = sidebar.render()  # 지금 보고 있는 조건(파일·기준월·조회기간·적정선) 또는 None
 
-    st.title(config.APP_TITLE)
+    theme.header(view)  # 맨 위 배너
     if view is None:
         st.info("왼쪽 사이드바에서 엑셀 파일을 올리거나 선택하세요.")
         return

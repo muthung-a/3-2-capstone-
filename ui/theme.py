@@ -75,8 +75,44 @@ h3 { font-size: 1.1rem !important; font-weight: 600 !important; color: #111827; 
 .alerts li { display:flex; gap:8px; align-items:flex-start; padding:7px 0; border-bottom:1px solid #f3f4f6; }
 .alerts li:last-child { border-bottom:0; }
 
+/* 상단 배너 */
+.hero { position:relative; overflow:hidden; display:flex; justify-content:space-between; align-items:flex-end;
+  gap:16px; flex-wrap:wrap; padding:22px 26px; margin: 0 0 14px; border-radius:16px; color:#fff;
+  background: linear-gradient(120deg,#1e3a8a 0%,#2563eb 55%,#38bdf8 120%);
+  box-shadow: 0 8px 24px -12px rgba(37,99,235,.55); }
+.hero:after { content:""; position:absolute; right:-60px; top:-80px; width:260px; height:260px; border-radius:50%;
+  background: radial-gradient(circle, rgba(255,255,255,.18), rgba(255,255,255,0) 70%); }
+.hero .t { font-size:23px; font-weight:700; letter-spacing:-.02em; }
+.hero .sub { font-size:13px; opacity:.85; margin-top:2px; }
+.hero .chips { display:flex; gap:6px; flex-wrap:wrap; position:relative; z-index:1; }
+.chip { font-size:12px; padding:4px 11px; border-radius:9999px; background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.28); white-space:nowrap; }
+.chip.ok { background:rgba(16,185,129,.28); border-color:rgba(110,231,183,.6); }
+
+/* 사이드바 로고 */
+.brand { display:flex; align-items:center; gap:10px; margin: 0 0 14px; }
+.brand i { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+  font-style:normal; font-size:18px; background:linear-gradient(135deg,#2563eb,#38bdf8); color:#fff; }
+.brand b { display:block; font-size:15px; color:#111827; } .brand span { font-size:11.5px; color:#6b7280; }
+.side-h { font-size:11.5px; font-weight:600; color:#9ca3af; letter-spacing:.06em; margin:14px 0 4px; }
+
+/* KPI 카드 색 포인트 (카드마다 --accent 색) */
+.kpi { border-top: 3px solid var(--accent, #3b82f6); }
+.kpi .hd { display:flex; justify-content:space-between; align-items:center; }
+.kpi .ic { width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+  font-size:16px; background: var(--tint, #eff6ff); }
+
+/* 요약·경고 카드 강조 */
+.st-key-summary_box { background: linear-gradient(135deg,#eff6ff 0%,#ffffff 65%) !important; border-color:#dbeafe !important; }
+.alerts li.r { box-shadow: inset 3px 0 0 #f43f5e; padding-left:10px; }
+.alerts li.y { box-shadow: inset 3px 0 0 #f59e0b; padding-left:10px; }
+.alerts li.g { box-shadow: inset 3px 0 0 #10b981; padding-left:10px; }
+.ptitle span:before { content:""; display:inline-block; width:8px; height:8px; border-radius:3px;
+  background:#3b82f6; margin-right:8px; vertical-align:1px; }
+
 /* 탭: 밑줄 스타일 */
 [data-testid="stTab"] p { font-size: 14px !important; font-weight: 500; }
+[data-testid="stTab"][aria-selected="true"] p { font-weight: 700; }
 [role="tabpanel"] { padding-top: 12px; }
 </style>
 """.replace("FONT", _FONT)
@@ -157,6 +193,19 @@ def panel_title(title: str, sub: str = "") -> None:
     """패널(카드) 제목 + 오른쪽 작은 설명."""
     st.markdown(f'<div class="ptitle"><span>{escape(title)}</span><small>{escape(sub)}</small></div>',
                 unsafe_allow_html=True)
+
+
+def header(v=None) -> None:
+    """맨 위 배너: 프로그램 이름 + 지금 보는 조건(기준월·조회기간·파일) 칩."""
+    chips = ""
+    if v is not None:
+        chips = (f'<span class="chip">기준월 {v.month.year}.{v.month.month:02d}</span>'
+                 f'<span class="chip">조회 {month_label(v.months[0])} ~ {month_label(v.months[-1])}</span>'
+                 f'<span class="chip">📄 {escape(v.file_name)}</span>')
+    chips += '<span class="chip ok">🔒 로컬 전용 · 외부 전송 없음</span>'
+    st.markdown(f'<div class="hero"><div><div class="t">📊 경영통계 대시보드</div>'
+                f'<div class="sub">요양병원 월별 경영 통계 · 자동 요약 · 보고서</div></div>'
+                f'<div class="chips">{chips}</div></div>', unsafe_allow_html=True)
 
 
 def month_label(m) -> str:

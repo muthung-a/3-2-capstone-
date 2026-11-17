@@ -113,7 +113,7 @@ def render(v: View) -> None:
     """수익 탭을 그립니다."""
     df, month, months = v.df, v.month, v.months
     x = [theme.month_label(m) for m in months]
-    st.subheader(f"수익 ({x[0]} ~ {x[-1]})")
+    st.subheader(f"💰 수익 ({x[0]} ~ {x[-1]})")
 
     rows = [((_total_trend, (df, months, x)), (_insurance_share, (df, month))),
             ((_care_type, (df, months, x)), (_per_patient, (df, months, x))),

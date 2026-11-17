@@ -29,10 +29,11 @@ def _pick_file():
 
 def _options(saved: dict, months: list):
     """기준월·조회기간·적정선·경고 기준을 고르고, 바뀐 설정은 파일에 저장합니다."""
+    st.markdown('<div class="side-h">조회 조건</div>', unsafe_allow_html=True)
     month = st.selectbox("기준월", months[::-1], format_func=lambda m: f"{m.year}년 {m.month}월")
     span = st.segmented_control("조회기간", config.SPAN_CHOICES, default=saved["span"],
                                 format_func=lambda n: f"{n}개월") or saved["span"]
-    st.markdown("**환경설정**")
+    st.markdown('<div class="side-h">환경설정</div>', unsafe_allow_html=True)
     bed = st.number_input("병상가동율 적정선(%)", 50.0, 100.0, float(saved["bed_target"]), 0.5)
     warn = st.number_input("확인 필요 기준 (12개월 평균 대비 ±%)", 1.0, 100.0, float(saved["warn_pct"]), 1.0)
     new = dict(saved, span=span, bed_target=bed, warn_pct=warn)
@@ -44,7 +45,8 @@ def _options(saved: dict, months: list):
 def render() -> View | None:
     """사이드바를 그리고 지금 보고 있는 조건(View)을 돌려줍니다. 파일이 없으면 None."""
     with st.sidebar:
-        st.header("메뉴")
+        st.markdown('<div class="brand"><i>📊</i><div><b>경영통계</b><span>요양병원 월별 통계 자동화</span>'
+                    '</div></div><div class="side-h">데이터</div>', unsafe_allow_html=True)
         picked = _pick_file()
         if picked is None:
             st.caption(f"버전 {config.VERSION}")
@@ -70,7 +72,7 @@ def render() -> View | None:
 def render_exports(v: View) -> None:
     """사이드바 아래쪽: 보고서 내보내기 버튼 + 보안 안내."""
     with st.sidebar:
-        st.markdown("**보고서 내보내기**")
+        st.markdown('<div class="side-h">보고서 내보내기</div>', unsafe_allow_html=True)
         stamp = f"{v.month.year}-{v.month.month:02d}"
         st.download_button("📥 엑셀 보고서", excel_report.build(v), f"경영통계보고서_{stamp}.xlsx",
                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", width="stretch")
