@@ -1,0 +1,39 @@
+# 병원 데이터 보호용 설정 — 이 PC에서만 접속, 외부로 사용통계 전송 안 함
+[server]
+address = "localhost"
+port = 8501
+maxUploadSize = 50
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false
+serverAddress = "localhost"
+
+[client]
+# Deploy(클라우드 배포) 버튼 숨김, 오류 화면의 외부 검색(ChatGPT/Google) 링크·파일 경로 노출 최소화
+toolbarMode = "viewer"
+showErrorDetails = "type"
+showErrorLinks = false
+
+# 밝은 모던 스타일 (Tremor·TailAdmin 참고): 흰 카드, 연회색 바탕, 파란 기본색, 흰 사이드바
+[theme]
+base = "light"
+primaryColor = "#3b82f6"
+backgroundColor = "#f8fafc"
+secondaryBackgroundColor = "#f1f5f9"
+textColor = "#111827"
+borderColor = "#e5e7eb"
+showWidgetBorder = true
+baseFontSize = 14
+baseRadius = "medium"
+buttonRadius = "medium"
+dataframeHeaderBackgroundColor = "#f9fafb"
+dataframeBorderColor = "#e5e7eb"
+chartCategoricalColors = ["#3b82f6", "#f59e0b", "#10b981", "#8b5cf6", "#f43f5e", "#06b6d4", "#6366f1", "#9ca3af"]
+
+[theme.sidebar]
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f8fafc"
+textColor = "#374151"
+borderColor = "#e5e7eb"
+primaryColor = "#3b82f6"

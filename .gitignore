@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+reports/output/
+# 병원 데이터 파일은 절대 저장소에 올리지 않기
+*.xlsx
+*.xls
+*.csv
+_기존_프로토타입/
+user_settings.json
+.pytest_cache/
+.claude/
