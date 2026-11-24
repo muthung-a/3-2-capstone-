@@ -22,6 +22,11 @@ SOURCES = ["app.py", "config.py", "core", "ui", "reports", ".streamlit/config.to
 SKIP_DIRS = {"__pycache__", "output"}
 
 
+def url_path(rel: str) -> str:
+    """사이트에 올릴 때의 경로. GitHub Pages 배포는 점(.)으로 시작하는 폴더를 빼므로 '.streamlit' → 'streamlit'."""
+    return "/".join(part.lstrip(".") for part in rel.split("/"))
+
+
 def collect(root: Path = ROOT) -> list[str]:
     """복사할 파일들의 상대 경로 (슬래시 '/' 로 구분)."""
     files = []
@@ -43,11 +48,13 @@ def build(out: Path, root: Path = ROOT) -> list[str]:
     out.mkdir(parents=True, exist_ok=True)
     files = collect(root)
     for rel in files:
-        target = out / rel
+        target = out / url_path(rel)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(root / rel, target)
     shutil.copyfile(root / "web" / "index.html", out / "index.html")
-    (out / "files.json").write_text(json.dumps(files, ensure_ascii=False, indent=1), encoding="utf-8")
+    # {브라우저 안 파이썬에서의 경로: 사이트 주소 경로}
+    mapping = {rel: url_path(rel) for rel in files}
+    (out / "files.json").write_text(json.dumps(mapping, ensure_ascii=False, indent=1), encoding="utf-8")
     (out / ".nojekyll").write_text("", encoding="utf-8")  # 밑줄(_)로 시작하는 파일도 그대로 올리기
     return files
 

@@ -12,11 +12,14 @@ import build_web  # noqa: E402
 def test_build_copies_app_files_only(tmp_path):
     out = tmp_path / "site"
     files = build_web.build(out)
-    listed = json.loads((out / "files.json").read_text(encoding="utf-8"))
-    assert listed == files
+    mapping = json.loads((out / "files.json").read_text(encoding="utf-8"))
+    assert list(mapping) == files
     assert (out / "index.html").exists() and (out / ".nojekyll").exists()
-    for rel in files:
-        assert (out / rel).exists()
+    for url in mapping.values():
+        assert (out / url).exists()
+        # GitHub Pages 배포는 점(.)으로 시작하는 폴더·파일을 빼므로 사이트 경로에는 없어야 함
+        assert not any(part.startswith(".") for part in url.split("/")), url
+    assert mapping[".streamlit/config.toml"] == "streamlit/config.toml"
     assert "app.py" in files and ".streamlit/config.toml" in files
     # 병원 자료·문서·설치 파일·가상데이터는 인터넷 사이트에 올리지 않음
     for rel in files:

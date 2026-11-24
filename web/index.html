@@ -33,8 +33,9 @@
 
     const boot = document.getElementById("boot");
     try {
-      const list = await (await fetch("./files.json", { cache: "no-store" })).json();
-      const files = Object.fromEntries(list.map((path) => [path, { url: "./" + path }]));
+      // files.json = { 파이썬 안 경로: 사이트 경로 } (예: ".streamlit/config.toml": "streamlit/config.toml")
+      const mapping = await (await fetch("./files.json", { cache: "no-store" })).json();
+      const files = Object.fromEntries(Object.entries(mapping).map(([path, url]) => [path, { url: "./" + url }]));
       mount(
         {
           entrypoint: "app.py",
