@@ -105,6 +105,7 @@ def test_app_without_file_shows_guide(tmp_path, monkeypatch):
     """로그인 후 파일을 올리기 전: 오류 없이 '엑셀을 올리세요' 안내만 나옵니다."""
     from core import auth
     monkeypatch.setattr(config, "ACCOUNTS_PATH", tmp_path / "accounts.json")
+    monkeypatch.setattr(config, "AUDIT_PATH", tmp_path / "log.jsonl")
     auth.save(config.ACCOUNTS_PATH, auth.add({}, "boss", "pass1234", auth.USER))
     at = AppTest.from_file(str(config.BASE_DIR / "app.py"), default_timeout=120)
     at.session_state["user"] = {"name": "boss", "role": auth.USER}

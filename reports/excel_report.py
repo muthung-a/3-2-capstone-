@@ -1,5 +1,6 @@
 """엑셀 보고서 만들기: 요약 · 핵심지표 · 환자·병상 · 수익 · 비용 시트. streamlit 은 쓰지 않습니다."""
 import io
+from datetime import datetime
 
 import pandas as pd
 
@@ -19,8 +20,9 @@ def build(v: View) -> bytes:
     lines, alerts = summary_and_alerts(v)
     buf = io.BytesIO()
     with pd.ExcelWriter(buf, engine="openpyxl") as xw:
+        made = f"작성 {datetime.now():%Y-%m-%d %H:%M}" + (f" · 작성자 {v.author}" if v.author else "")
         head = [f"경영통계 보고서 — {v.month.year}년 {v.month.month}월",
-                f"조회기간 {v.months[0]} ~ {v.months[-1]} · 원자료 {v.file_name}", "", "■ 자동 요약"]
+                f"조회기간 {v.months[0]} ~ {v.months[-1]} · 원자료 {v.file_name}", made, "", "■ 자동 요약"]
         body = head + [f"• {plain(t)}" for t in lines] + ["", "■ 확인 필요 항목"] + \
             [f"[{a.badge}] {a.text}" for a in alerts]
         pd.DataFrame({"내용": body}).to_excel(xw, sheet_name="요약", index=False)

@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent
 # 화면 제목
 APP_TITLE = "경영통계 대시보드"
 APP_ICON = "📊"
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 
 # 보고서를 저장할 폴더
 REPORT_OUTPUT_DIR = BASE_DIR / "reports" / "output"
@@ -64,6 +64,10 @@ SETTINGS_PATH = Path(os.environ.get("DASHBOARD_SETTINGS") or BASE_DIR / "user_se
 ACCOUNTS_PATH = SETTINGS_PATH.parent / "accounts.json"
 # 비밀번호를 연속으로 틀리면 잠시 로그인을 막습니다: (허용 횟수, 막는 초)
 LOGIN_LOCK = (5, 30)
+# 이 시간(분) 동안 아무 조작이 없으면 자동 로그아웃 (공용 PC에서 다른 사람이 이어 쓰는 것 방지)
+IDLE_LOGOUT_MIN = 30
+# 사용 기록 (누가·언제·무엇을). 엑셀 내용은 남기지 않음. 관리자만 '계정 관리 → 사용 기록'에서 봄
+AUDIT_PATH = SETTINGS_PATH.parent / "activity_log.jsonl"
 
 # 사이드바 '조회기간' 선택지(개월). 기본값은 core/settings.py 의 DEFAULTS["span"]
 SPAN_CHOICES = [3, 6, 12]

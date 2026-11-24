@@ -18,3 +18,4 @@ class View:
     settings: dict = field(default_factory=dict)  # 저장된 사용자 설정 (즐겨찾기 등)
     drugs: object = None      # 약품 처방 원 데이터 (core.drugs.Drugs). 약품 시트가 없으면 None
     demo: bool = False        # 시연판(인터넷에 올린 버전)이면 True: 가상 데이터만, 설정 저장 안 함
+    author: str = ""          # 로그인한 사람 아이디 (보고서에 '작성자'로 찍힘)

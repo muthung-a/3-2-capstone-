@@ -25,17 +25,17 @@ def main(demo: bool = False) -> None:
     """화면 전체. demo=True 는 인터넷 시연판(demo_app.py): 가상 데이터만, 파일 올리기 없음."""
     st.set_page_config(page_title=config.APP_TITLE, page_icon=config.APP_ICON, layout="wide")
     theme.apply()
-    can_edit = True  # 환경설정(적정선·확인 기준)을 바꿀 수 있는지
-    if demo:
+    can_edit, author = True, ""  # 환경설정을 바꿀 수 있는지, 로그인한 사람
+    if demo:  # 시연판은 가상 데이터라 로그인 없이 봄
         sidebar.brand()
-    else:  # 시연판은 가상 데이터라 로그인 없이 봄
+    else:
         user = login.gate()  # 로그인 전이면 로그인 화면만 그리고 None
         if user is None:
             return
         sidebar.brand()
-        login.user_box(user)
-        can_edit = user["role"] == "admin"
-    view = sidebar.render(demo, can_edit)  # 지금 보고 있는 조건(파일·기준월·조회기간·적정선) 또는 None
+        login.user_box(user)  # 로그인한 사람 · 계정 관리 · 로그아웃 · 자리 비움 자동 로그아웃
+        can_edit, author = user["role"] == "admin", user["name"]
+    view = sidebar.render(demo, can_edit, author)  # 지금 보고 있는 조건(파일·기준월·조회기간·적정선) 또는 None
 
     theme.header(view)  # 맨 위 배너
     if view is None:

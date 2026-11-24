@@ -4,7 +4,7 @@ import io
 import streamlit as st
 
 import config
-from core import check, drugs, monthly, quality, sample, settings
+from core import audit, check, drugs, monthly, quality, sample, settings
 from core.view import View
 from reports import excel_report, html_report
 
@@ -41,7 +41,13 @@ def _pick_file():
     return uploaded.name, uploaded.getvalue()
 
 
-def _options(saved: dict, months: list, demo: bool = False, can_edit: bool = True):
+def _log(author: str, action: str, detail: str = "") -> None:
+    """사용 기록 (로그인한 사람이 있을 때만. 시연판은 기록 안 함)."""
+    if author:
+        audit.add(config.AUDIT_PATH, author, action, detail)
+
+
+def _options(saved: dict, months: list, demo: bool = False, can_edit: bool = True, author: str = ""):
     """기준월·조회기간·적정선·경고 기준을 고르고, 바뀐 설정은 파일에 저장합니다. (시연 모드는 저장 안 함)
 
     can_edit=False(사용자 계정): 적정선·확인 기준은 보기만 합니다. 관리자만 바꿀 수 있습니다.
@@ -63,6 +69,8 @@ def _options(saved: dict, months: list, demo: bool = False, can_edit: bool = Tru
     new = dict(saved, span=span, bed_target=bed, warn_pct=warn)
     if new != saved and not demo:  # 시연판은 여러 사람이 함께 보므로 서버에 설정을 저장하지 않음
         settings.save(config.SETTINGS_PATH, new)
+        if (bed, warn) != (saved["bed_target"], saved["warn_pct"]):
+            _log(author, "환경설정 변경", f"적정선 {saved['bed_target']}→{bed}%, 확인 기준 ±{saved['warn_pct']}→±{warn}%")
     return month, new
 
 
@@ -86,10 +94,11 @@ def brand() -> None:
                     '</div></div>', unsafe_allow_html=True)
 
 
-def render(demo: bool = False, can_edit: bool = True) -> View | None:
+def render(demo: bool = False, can_edit: bool = True, author: str = "") -> View | None:
     """사이드바를 그리고 지금 보고 있는 조건(View)을 돌려줍니다. 파일이 없으면 None.
 
     demo=True (시연판): 파일 올리기 칸 없이 가짜 데이터로 바로 엽니다. 실제 데이터가 들어올 길을 막기 위함.
+    author: 로그인한 사람 아이디 (보고서 작성자·사용 기록에 씀)
     """
     with st.sidebar:
         st.markdown('<div class="side-h">데이터</div>', unsafe_allow_html=True)
@@ -121,12 +130,15 @@ def render(demo: bool = False, can_edit: bool = True) -> View | None:
             st.error("값이 들어 있는 달이 없습니다.")
             return None
         st.caption(f"{name} · 시트 '{df.attrs.get('sheet', '')}' · {all_months[0]} ~ {all_months[-1]}")
+        if st.session_state.get("_logged_file") != (author, name, len(data)):  # 같은 파일은 한 번만 기록
+            st.session_state["_logged_file"] = (author, name, len(data))
+            _log(author, "파일 열기", f"{name} ({all_months[0]} ~ {all_months[-1]})")
         _data_check(df)
         saved = dict(settings.DEFAULTS, favorites=[]) if demo else settings.load(config.SETTINGS_PATH)
-        month, opts = _options(saved, all_months, demo, can_edit)
+        month, opts = _options(saved, all_months, demo, can_edit, author)
     return View(df=df, month=month, months=monthly.recent_months(df, month, opts["span"]),
                 bed_target=opts["bed_target"], warn_pct=opts["warn_pct"], file_name=name, settings=opts,
-                drugs=_load_drugs(data), demo=demo)
+                drugs=_load_drugs(data), demo=demo, author=author)
 
 
 def render_exports(v: View) -> None:
@@ -135,10 +147,12 @@ def render_exports(v: View) -> None:
         st.markdown('<div class="side-h">보고서 내보내기</div>', unsafe_allow_html=True)
         stamp = f"{v.month.year}-{v.month.month:02d}"
         st.download_button("📥 엑셀 보고서", excel_report.build(v), f"경영통계보고서_{stamp}.xlsx",
-                           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", width="stretch")
+                           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", width="stretch",
+                           on_click=_log, args=(v.author, "엑셀 보고서 받기", f"{stamp} · {v.file_name}"))
         st.download_button("🖨 인쇄용 보고서 (PDF 저장)", html_report.build(v).encode("utf-8"),
                            f"경영통계보고서_{stamp}.html", "text/html", width="stretch",
-                           help="받은 파일을 열고 [인쇄] → 'PDF로 저장'을 고르면 PDF가 됩니다.")
+                           help="받은 파일을 열고 [인쇄] → 'PDF로 저장'을 고르면 PDF가 됩니다.",
+                           on_click=_log, args=(v.author, "인쇄용 보고서 받기", f"{stamp} · {v.file_name}"))
         st.caption("그래프는 오른쪽 위 📷 아이콘으로 이미지(PNG) 저장")
         if v.demo:
             st.info("🎬 시연판입니다. 병원에서는 PC 설치형(실행.bat)을 쓰며, 데이터는 PC 밖으로 나가지 않습니다.")

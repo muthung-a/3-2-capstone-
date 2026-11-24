@@ -54,7 +54,8 @@ def build(v: View) -> str:
     lines, alerts = summary_and_alerts(v)
     title = f"경영통계 보고서 — {v.month.year}년 {v.month.month}월"
     meta = (f"조회기간 {v.months[0]} ~ {v.months[-1]}<br>원자료 {escape(v.file_name)}<br>"
-            f"작성 {datetime.now():%Y-%m-%d %H:%M} · 이 PC에서 생성")
+            f"작성 {datetime.now():%Y-%m-%d %H:%M}" + (f" · 작성자 {escape(v.author)}" if v.author else "")
+            + " · 이 PC에서 생성")
     parts = [f"<header><div><h1>{escape(title)}</h1></div><div class='meta'>{meta}</div></header>",
              "<p class='noprint'><button onclick='window.print()'>🖨 인쇄 / PDF로 저장</button> "
              "<span class='note'>인쇄 창에서 대상을 'PDF로 저장'으로 고르세요.</span></p>",

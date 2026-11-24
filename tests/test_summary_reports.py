@@ -81,3 +81,13 @@ def test_reports_build_from_real_file():
     assert "자동 요약" in html and "확인 필요 항목" in html and "비용 상세" in html
     assert "&lt;가상&gt;&amp;테스트.xlsx" in html                 # 파일 이름은 이스케이프됨
     assert "인건비 값이 0" in html                                 # 미입력 의심이 보고서에도 나옴
+
+
+def test_reports_show_author():
+    """로그인한 사람이 보고서에 '작성자'로 찍힙니다. (이름은 이스케이프)"""
+    import dataclasses
+    v = dataclasses.replace(_real_view(), author="<김>간호사")
+    wb = load_workbook(io.BytesIO(excel_report.build(v)))
+    first_col = [c.value for c in wb["요약"]["A"]]
+    assert any("작성자 <김>간호사" in str(x) for x in first_col)
+    assert "작성자 &lt;김&gt;간호사" in html_report.build(v)

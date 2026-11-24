@@ -68,6 +68,7 @@ def test_broken_file_is_empty(tmp_path):
 def accounts_file(tmp_path, monkeypatch):
     path = tmp_path / "accounts.json"
     monkeypatch.setattr(config, "ACCOUNTS_PATH", path)
+    monkeypatch.setattr(config, "AUDIT_PATH", tmp_path / "log.jsonl")
     return path
 
 

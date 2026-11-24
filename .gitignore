@@ -18,3 +18,6 @@ _site/
 
 # 로그인 계정 (비밀번호 해시) — 이 PC에만 둠
 accounts.json
+
+# 사용 기록 (누가·언제·무엇을) — 이 PC에만 둠
+activity_log.jsonl
