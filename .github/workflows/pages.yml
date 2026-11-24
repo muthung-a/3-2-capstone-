@@ -1,0 +1,35 @@
+# 웹판 자동 배포: main 에 올릴 때마다 GitHub Pages 사이트를 새로 만듭니다.
+# 앱 실행에 필요한 파일만 올립니다 (scripts/build_web.py). README·docs·data 등은 사이트에 올라가지 않습니다.
+# 처음 한 번: GitHub 저장소 Settings → Pages → Source 를 "GitHub Actions" 로 바꿔야 합니다.
+name: 웹판 배포 (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: 웹판 파일 모으기
+        run: python3 scripts/build_web.py _site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

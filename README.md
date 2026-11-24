@@ -114,6 +114,24 @@ py -3.12 -m venv .venv
 
 배포가 실패하면 앱 화면 오른쪽 아래 **Manage app** 에서 로그를 확인합니다.
 
+## 웹판 (설치 없이 병원에서 실제 데이터로 써 보기 · GitHub Pages)
+
+링크만 열면 되는 **병원용과 같은 화면**입니다. [stlite](https://github.com/whitphx/stlite) 로 파이썬이
+**접속한 PC의 브라우저 안에서** 돌아가므로, 올린 엑셀은 그 PC 밖(GitHub·인터넷 서버)으로 나가지 않습니다.
+
+- 사이트에는 앱 실행에 필요한 파일만 올라갑니다 (`scripts/build_web.py`). README·docs·data·.bat 은 올라가지 않습니다.
+- `main` 에 올리면 `.github/workflows/pages.yml` 이 사이트를 자동으로 다시 만듭니다.
+- 처음 한 번: GitHub 저장소 **Settings → Pages → Source** 를 **GitHub Actions** 로 바꿉니다.
+- 조회기간·적정선·즐겨찾기는 그 브라우저에 저장됩니다 (PC·브라우저마다 따로).
+- 처음 열 때 30초~1분 걸립니다. Chrome 또는 Edge 권장. 병원 방화벽이 `cdn.jsdelivr.net`·`pypi.org` 를 막으면 열리지 않습니다.
+
+**내 PC에서 미리 보기**
+```
+.venv\Scripts\python scripts\build_web.py
+.venv\Scripts\python -m http.server 8000 -d _site
+```
+브라우저에서 http://localhost:8000 을 엽니다.
+
 ---
 
 ## 5. 설정 바꾸기 (코드를 몰라도 되는 부분)

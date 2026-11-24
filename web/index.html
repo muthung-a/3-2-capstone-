@@ -1,0 +1,59 @@
+<!doctype html>
+<!--
+  경영통계 대시보드 웹판 (GitHub Pages).
+  stlite 로 파이썬을 '이 브라우저 안에서' 실행합니다. 올린 엑셀은 이 PC 밖으로 전송되지 않습니다.
+  파일 목록(files.json)은 scripts/build_web.py 가 만듭니다. 이 파일만 직접 열면 동작하지 않습니다.
+-->
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>경영통계 대시보드</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/browser@1.12.1/build/stlite.css" />
+  <style>
+    body { margin: 0; background: #f8fafc; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
+    #boot { max-width: 520px; margin: 18vh auto 0; padding: 28px 32px; background: #fff; border: 1px solid #e5e7eb;
+            border-radius: 12px; color: #374151; line-height: 1.7; }
+    #boot h1 { font-size: 20px; margin: 0 0 8px; color: #111827; }
+    #boot .err { color: #be123c; }
+  </style>
+</head>
+<body>
+  <div id="boot">
+    <h1>📊 경영통계 대시보드 여는 중…</h1>
+    <div id="boot-msg">처음 열 때는 프로그램을 내려받느라 <b>30초~1분</b> 정도 걸립니다.<br />
+      두 번째부터는 더 빨라집니다. (Chrome 또는 Edge 권장)<br /><br />
+      🔒 올린 엑셀은 <b>이 PC의 브라우저 안에서만</b> 처리되고 인터넷으로 전송되지 않습니다.</div>
+  </div>
+  <div id="root"></div>
+  <script type="module">
+    import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@1.12.1/build/stlite.js";
+
+    const boot = document.getElementById("boot");
+    try {
+      const list = await (await fetch("./files.json", { cache: "no-store" })).json();
+      const files = Object.fromEntries(list.map((path) => [path, { url: "./" + path }]));
+      mount(
+        {
+          entrypoint: "app.py",
+          // pandas 는 브라우저용 파이썬(Pyodide)에 들어 있는 버전을 씁니다
+          requirements: ["pandas", "plotly==7.1.0", "openpyxl==3.1.5"],
+          files,
+          // 조회기간·적정선·즐겨찾기를 이 브라우저에 저장 (다른 PC·다른 브라우저와는 따로)
+          idbfsMountpoints: ["/home/pyodide/settings"],
+          env: { DASHBOARD_SETTINGS: "/home/pyodide/settings/user_settings.json" },
+        },
+        document.getElementById("root"),
+      );
+      boot.remove();
+    } catch (err) {
+      document.getElementById("boot-msg").innerHTML =
+        '<span class="err">열지 못했습니다.</span> 인터넷 연결을 확인하고 새로고침(F5) 해 주세요.<br />' +
+        "병원 방화벽이 cdn.jsdelivr.net 을 막고 있으면 열리지 않을 수 있습니다.<br /><small>" +
+        String(err).replace(/</g, "&lt;") + "</small>";
+    }
+  </script>
+</body>
+</html>

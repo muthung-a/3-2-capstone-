@@ -2,6 +2,7 @@
 
 숫자·문구·경로처럼 '나중에 바뀔 수 있는 값'은 코드 곳곳에 흩어 두지 말고 여기에 적습니다.
 """
+import os
 from pathlib import Path
 
 # 프로젝트 폴더 위치 (이 파일이 있는 폴더)
@@ -56,7 +57,8 @@ NEVER_ZERO = [
 ]
 
 # 사용자 설정 파일 (조회기간·적정선·경고 기준·즐겨찾기). 이 PC에만 저장됩니다.
-SETTINGS_PATH = BASE_DIR / "user_settings.json"
+# 웹판(web/index.html)은 DASHBOARD_SETTINGS 로 '브라우저 저장소' 안의 경로를 알려 줍니다.
+SETTINGS_PATH = Path(os.environ.get("DASHBOARD_SETTINGS") or BASE_DIR / "user_settings.json")
 
 # 사이드바 '조회기간' 선택지(개월). 기본값은 core/settings.py 의 DEFAULTS["span"]
 SPAN_CHOICES = [3, 6, 12]

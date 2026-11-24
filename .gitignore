@@ -9,3 +9,9 @@ reports/output/
 user_settings.json
 .pytest_cache/
 .claude/
+
+# 병원에 보낼 배포용 ZIP (저장소에는 안 올림)
+release/
+
+# 웹판 미리 보기용으로 만든 폴더 (scripts/build_web.py)
+_site/
