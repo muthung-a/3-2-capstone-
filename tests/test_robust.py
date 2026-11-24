@@ -101,9 +101,14 @@ def test_pages_survive_missing_items():
     assert not at.exception, [e.value for e in at.exception]
 
 
-def test_app_without_file_shows_guide():
-    """파일을 올리기 전: 오류 없이 '엑셀을 올리세요' 안내만 나옵니다."""
-    at = AppTest.from_file(str(config.BASE_DIR / "app.py"), default_timeout=120).run()
+def test_app_without_file_shows_guide(tmp_path, monkeypatch):
+    """로그인 후 파일을 올리기 전: 오류 없이 '엑셀을 올리세요' 안내만 나옵니다."""
+    from core import auth
+    monkeypatch.setattr(config, "ACCOUNTS_PATH", tmp_path / "accounts.json")
+    auth.save(config.ACCOUNTS_PATH, auth.add({}, "boss", "pass1234", auth.USER))
+    at = AppTest.from_file(str(config.BASE_DIR / "app.py"), default_timeout=120)
+    at.session_state["user"] = {"name": "boss", "role": auth.USER}
+    at.run()
     assert not at.exception, [e.value for e in at.exception]
     assert any("엑셀 파일을 올려" in i.value for i in at.info)
     assert len(at.tabs) == 0

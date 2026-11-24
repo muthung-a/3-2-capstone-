@@ -15,3 +15,6 @@ release/
 
 # 웹판 미리 보기용으로 만든 폴더 (scripts/build_web.py)
 _site/
+
+# 로그인 계정 (비밀번호 해시) — 이 PC에만 둠
+accounts.json

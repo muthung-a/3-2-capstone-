@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent
 # 화면 제목
 APP_TITLE = "경영통계 대시보드"
 APP_ICON = "📊"
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 
 # 보고서를 저장할 폴더
 REPORT_OUTPUT_DIR = BASE_DIR / "reports" / "output"
@@ -59,6 +59,11 @@ NEVER_ZERO = [
 # 사용자 설정 파일 (조회기간·적정선·경고 기준·즐겨찾기). 이 PC에만 저장됩니다.
 # 웹판(web/index.html)은 DASHBOARD_SETTINGS 로 '브라우저 저장소' 안의 경로를 알려 줍니다.
 SETTINGS_PATH = Path(os.environ.get("DASHBOARD_SETTINGS") or BASE_DIR / "user_settings.json")
+
+# 로그인 계정 파일 (관리자·사용자). 설정 파일과 같은 곳에 저장 → 웹판은 그 PC 브라우저 저장소
+ACCOUNTS_PATH = SETTINGS_PATH.parent / "accounts.json"
+# 비밀번호를 연속으로 틀리면 잠시 로그인을 막습니다: (허용 횟수, 막는 초)
+LOGIN_LOCK = (5, 30)
 
 # 사이드바 '조회기간' 선택지(개월). 기본값은 core/settings.py 의 DEFAULTS["span"]
 SPAN_CHOICES = [3, 6, 12]

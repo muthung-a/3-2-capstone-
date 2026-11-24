@@ -41,8 +41,11 @@ def _pick_file():
     return uploaded.name, uploaded.getvalue()
 
 
-def _options(saved: dict, months: list, demo: bool = False):
-    """기준월·조회기간·적정선·경고 기준을 고르고, 바뀐 설정은 파일에 저장합니다. (시연 모드는 저장 안 함)"""
+def _options(saved: dict, months: list, demo: bool = False, can_edit: bool = True):
+    """기준월·조회기간·적정선·경고 기준을 고르고, 바뀐 설정은 파일에 저장합니다. (시연 모드는 저장 안 함)
+
+    can_edit=False(사용자 계정): 적정선·확인 기준은 보기만 합니다. 관리자만 바꿀 수 있습니다.
+    """
     st.markdown('<div class="side-h">조회 조건</div>', unsafe_allow_html=True)
     month = st.selectbox("기준월 (분석할 달)", months[::-1], format_func=lambda m: f"{m.year}년 {m.month}월")
     # 라디오 버튼: 항상 하나가 선택된 상태 (버튼식은 다시 누르면 선택이 풀려서 헷갈림)
@@ -51,8 +54,12 @@ def _options(saved: dict, months: list, demo: bool = False):
                     index=choices.index(saved["span"]) if saved["span"] in choices else 0,
                     format_func=lambda n: f"{n}개월")
     st.markdown('<div class="side-h">환경설정</div>', unsafe_allow_html=True)
-    bed = st.number_input("병상가동율 적정선(%)", 50.0, 100.0, float(saved["bed_target"]), 0.5)
-    warn = st.number_input("확인 필요 기준 (12개월 평균 대비 ±%)", 1.0, 100.0, float(saved["warn_pct"]), 1.0)
+    locked = not can_edit
+    bed = st.number_input("병상가동율 적정선(%)", 50.0, 100.0, float(saved["bed_target"]), 0.5, disabled=locked)
+    warn = st.number_input("확인 필요 기준 (12개월 평균 대비 ±%)", 1.0, 100.0, float(saved["warn_pct"]), 1.0,
+                           disabled=locked)
+    if locked:
+        st.caption("🔒 환경설정은 관리자만 바꿀 수 있습니다.")
     new = dict(saved, span=span, bed_target=bed, warn_pct=warn)
     if new != saved and not demo:  # 시연판은 여러 사람이 함께 보므로 서버에 설정을 저장하지 않음
         settings.save(config.SETTINGS_PATH, new)
@@ -72,14 +79,20 @@ def _data_check(df) -> None:
         st.dataframe([{"어디서": i.where, "찾는 이름": i.path} for i in missing], hide_index=True)
 
 
-def render(demo: bool = False) -> View | None:
+def brand() -> None:
+    """사이드바 맨 위 로고."""
+    with st.sidebar:
+        st.markdown('<div class="brand"><i>📊</i><div><b>경영통계</b><span>요양병원 월별 통계 자동화</span>'
+                    '</div></div>', unsafe_allow_html=True)
+
+
+def render(demo: bool = False, can_edit: bool = True) -> View | None:
     """사이드바를 그리고 지금 보고 있는 조건(View)을 돌려줍니다. 파일이 없으면 None.
 
     demo=True (시연판): 파일 올리기 칸 없이 가짜 데이터로 바로 엽니다. 실제 데이터가 들어올 길을 막기 위함.
     """
     with st.sidebar:
-        st.markdown('<div class="brand"><i>📊</i><div><b>경영통계</b><span>요양병원 월별 통계 자동화</span>'
-                    '</div></div><div class="side-h">데이터</div>', unsafe_allow_html=True)
+        st.markdown('<div class="side-h">데이터</div>', unsafe_allow_html=True)
         if demo:
             st.info("🎬 **시연용** · 코드로 만든 가상 데이터입니다.\n\n실제 병원 데이터는 올릴 수 없습니다.")
             picked = ("시연용_가상데이터.xlsx", _demo_file())
@@ -110,7 +123,7 @@ def render(demo: bool = False) -> View | None:
         st.caption(f"{name} · 시트 '{df.attrs.get('sheet', '')}' · {all_months[0]} ~ {all_months[-1]}")
         _data_check(df)
         saved = dict(settings.DEFAULTS, favorites=[]) if demo else settings.load(config.SETTINGS_PATH)
-        month, opts = _options(saved, all_months, demo)
+        month, opts = _options(saved, all_months, demo, can_edit)
     return View(df=df, month=month, months=monthly.recent_months(df, month, opts["span"]),
                 bed_target=opts["bed_target"], warn_pct=opts["warn_pct"], file_name=name, settings=opts,
                 drugs=_load_drugs(data), demo=demo)

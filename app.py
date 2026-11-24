@@ -6,7 +6,7 @@ r"""대시보드 진입점: 화면을 '조립'만 합니다.
 import streamlit as st
 
 import config
-from ui import sidebar, theme
+from ui import login, sidebar, theme
 from ui.pages import cost, custom, drugs, overview, patients, revenue
 
 # 탭 이름과 그 탭을 그리는 파일. 탭을 추가하려면 ui/pages/에 파일을 만들고 여기 한 줄 추가.
@@ -25,7 +25,17 @@ def main(demo: bool = False) -> None:
     """화면 전체. demo=True 는 인터넷 시연판(demo_app.py): 가상 데이터만, 파일 올리기 없음."""
     st.set_page_config(page_title=config.APP_TITLE, page_icon=config.APP_ICON, layout="wide")
     theme.apply()
-    view = sidebar.render(demo)  # 지금 보고 있는 조건(파일·기준월·조회기간·적정선) 또는 None
+    can_edit = True  # 환경설정(적정선·확인 기준)을 바꿀 수 있는지
+    if demo:
+        sidebar.brand()
+    else:  # 시연판은 가상 데이터라 로그인 없이 봄
+        user = login.gate()  # 로그인 전이면 로그인 화면만 그리고 None
+        if user is None:
+            return
+        sidebar.brand()
+        login.user_box(user)
+        can_edit = user["role"] == "admin"
+    view = sidebar.render(demo, can_edit)  # 지금 보고 있는 조건(파일·기준월·조회기간·적정선) 또는 None
 
     theme.header(view)  # 맨 위 배너
     if view is None:
