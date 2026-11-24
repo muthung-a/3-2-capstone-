@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>경영통계 대시보드 사용 설명서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 레이아웃: 왼쪽 목차 + 오른쪽 본문(설명서 한 장). 좁은 화면은 한 줄로. 색은 대시보드와 같은 파랑 계열 */
+:root {
+  --bg: #f6f8fb; --paper: #ffffff; --fg: #1b2433; --muted: #5b6678; --line: #e2e7ef;
+  --accent: #2f6fe4; --accent-soft: #eaf1fe; --warn: #b45309; --warn-soft: #fff6e5; --bad: #c0264b; --bad-soft: #fdeef2;
+  --ok: #0f8a5f; --ok-soft: #e7f7f0;
+  --display: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --body: "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f141c; --paper: #161d28; --fg: #e5eaf2; --muted: #9aa6b8; --line: #263142;
+  --accent: #6ea0ff; --accent-soft: #1b2a45; --warn: #f0b45a; --warn-soft: #33270f; --bad: #ff7d98; --bad-soft: #3a1a24;
+  --ok: #4fd3a0; --ok-soft: #12302a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f141c; --paper: #161d28; --fg: #e5eaf2; --muted: #9aa6b8; --line: #263142;
+  --accent: #6ea0ff; --accent-soft: #1b2a45; --warn: #f0b45a; --warn-soft: #33270f; --bad: #ff7d98; --bad-soft: #3a1a24;
+  --ok: #4fd3a0; --ok-soft: #12302a; color-scheme: dark }
+
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15.5px; line-height: 1.75; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 40px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 40px; }
+@media (max-width: 820px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 20px; } nav.toc { position: static !important; } }
+
+nav.toc { position: sticky; top: 24px; align-self: start; font-size: 14px; }
+nav.toc b { font-family: var(--display); display: block; margin-bottom: 8px; color: var(--muted); font-size: 12px; letter-spacing: .06em; }
+nav.toc ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+nav.toc a { color: var(--fg); text-decoration: none; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); text-decoration: underline; }
+
+main { min-width: 0; }
+header { margin-bottom: 28px; }
+header .kicker { font-family: var(--display); color: var(--accent); font-weight: 600; font-size: 13px; letter-spacing: .06em; }
+h1 { font-family: var(--display); font-size: 2rem; line-height: 1.3; margin: 6px 0 10px; text-wrap: balance; }
+header p { color: var(--muted); margin: 0; max-width: 62ch; }
+
+.link { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 18px; padding: 14px 18px;
+  background: var(--accent-soft); border-radius: 10px; }
+.link code { font-size: 15px; font-weight: 700; color: var(--accent); word-break: break-all; font-family: var(--body); }
+.link button { font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--accent);
+  background: var(--paper); color: var(--accent); cursor: pointer; }
+.link .go { font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 6px; background: var(--accent);
+  color: var(--paper); text-decoration: none; }
+.link .go:focus-visible, .link button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+section { padding-block: 26px; border-top: 1px solid var(--line); }
+h2 { font-family: var(--display); font-size: 1.3rem; margin: 0 0 12px; display: flex; gap: 10px; align-items: baseline; }
+h2 .n { color: var(--accent); font-size: 1rem; font-variant-numeric: tabular-nums; }
+h3 { font-family: var(--display); font-size: 1.02rem; margin: 18px 0 6px; }
+p, li { max-width: 68ch; }
+ol.steps, ul { padding-left: 22px; margin: 6px 0; }
+ol.steps li { margin-bottom: 6px; }
+.ui { display: inline-block; padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; background: var(--paper);
+  font-size: 13.5px; font-weight: 500; white-space: nowrap; }
+
+.note { padding: 12px 16px; border-radius: 8px; margin: 12px 0; max-width: 68ch; }
+.note.safe { background: var(--ok-soft); }
+.note.safe b { color: var(--ok); }
+.note.tip { background: var(--warn-soft); }
+.note.tip b { color: var(--warn); }
+
+/* 화면 배치 그림 */
+.screen { display: grid; grid-template-columns: 150px minmax(0, 1fr); border: 1px solid var(--line); border-radius: 10px;
+  overflow: hidden; background: var(--paper); font-size: 12.5px; line-height: 1.5; margin: 12px 0; max-width: 680px; }
+.screen .side { background: var(--bg); padding: 12px; display: grid; gap: 6px; align-content: start; border-right: 1px solid var(--line); }
+.screen .side div, .screen .main div { border: 1px dashed var(--line); border-radius: 6px; padding: 5px 8px; }
+.screen .main { padding: 12px; display: grid; gap: 8px; align-content: start; }
+.screen .banner { background: var(--accent); color: #fff; border: 0 !important; font-weight: 600; }
+.screen .tabs { display: flex; flex-wrap: wrap; gap: 4px; border: 0 !important; padding: 0 !important; }
+.screen .tabs span { border-bottom: 2px solid var(--line); padding: 0 4px; }
+.screen .tabs span:first-child { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 520px) { .screen { grid-template-columns: minmax(0, 1fr); } .screen .side { border-right: 0; border-bottom: 1px solid var(--line); } }
+
+.tbl { overflow-x: auto; margin: 10px 0; }
+table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 14.5px; background: var(--paper); }
+th, td { border-bottom: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+th { font-family: var(--display); font-weight: 600; color: var(--muted); font-size: 13px; }
+td:first-child { white-space: nowrap; font-weight: 500; }
+
+.chip { display: inline-block; padding: 0 8px; border-radius: 999px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.chip.bad { background: var(--bad-soft); color: var(--bad); }
+.chip.warn { background: var(--warn-soft); color: var(--warn); }
+.up { color: var(--bad); font-weight: 700; } .dn { color: var(--accent); font-weight: 700; }
+
+dl.faq { margin: 0; display: grid; gap: 14px; }
+dl.faq dt { font-weight: 700; }
+dl.faq dd { margin: 2px 0 0; color: var(--fg); max-width: 68ch; }
+footer { color: var(--muted); font-size: 13px; padding-top: 22px; border-top: 1px solid var(--line); }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="toc" aria-label="목차">
+    <b>목차</b>
+    <ol>
+      <li><a href="#open">접속하기</a></li>
+      <li><a href="#upload">엑셀 올리기</a></li>
+      <li><a href="#layout">화면 구성</a></li>
+      <li><a href="#tabs">탭별 내용</a></li>
+      <li><a href="#alerts">자동 요약과 확인 필요 항목</a></li>
+      <li><a href="#options">조회 조건 바꾸기</a></li>
+      <li><a href="#export">보고서 내보내기</a></li>
+      <li><a href="#favorites">자주 보는 항목 고정</a></li>
+      <li><a href="#faq">문제가 생기면</a></li>
+      <li><a href="#feedback">의견 보내기</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header>
+      <div class="kicker">요양병원 월별 경영 통계 자동화</div>
+      <h1>경영통계 대시보드 사용 설명서</h1>
+      <p>매달 작성하는 <b>월별 경영 통계표(엑셀)</b>를 올리면 자동 요약, 그래프, 상세 표를 보여 주고
+        엑셀·인쇄용 보고서로 내보내는 프로그램입니다. 설치 없이 인터넷 창에서 바로 씁니다.</p>
+      <div class="link">
+        <span>접속 주소</span>
+        <code id="url">https://muthung-a.github.io/3-2-capstone-/</code>
+        <button type="button" id="copy">주소 복사</button>
+        <a class="go" href="./">대시보드 열기 →</a>
+      </div>
+    </header>
+
+    <section id="open">
+      <h2><span class="n">1</span>접속하기</h2>
+      <ol class="steps">
+        <li><b>Chrome</b> 또는 <b>Edge</b>를 열고 위 접속 주소로 들어갑니다.</li>
+        <li>"경영통계 대시보드 여는 중…" 화면이 나오고 <b>30초~1분</b> 뒤 대시보드가 뜹니다. 두 번째부터는 더 빨리 열립니다.</li>
+        <li>자주 쓰신다면 주소를 <b>즐겨찾기</b>에 추가해 두세요.</li>
+      </ol>
+      <div class="note safe"><b>개인정보 안내</b> · 프로그램만 인터넷에서 내려받고, 올린 엑셀은 <b>이 PC의 인터넷 창 안에서만</b> 계산합니다.
+        엑셀 내용은 어디로도 전송되지 않으며, 창을 닫으면 올린 내용도 사라집니다.</div>
+    </section>
+
+    <section id="upload">
+      <h2><span class="n">2</span>엑셀 올리기</h2>
+      <ol class="steps">
+        <li>왼쪽 <span class="ui">엑셀 파일 올리기</span>에서 <span class="ui">Upload</span>를 누르거나, 파일을 그 칸으로 끌어다 놓습니다.</li>
+        <li>월별 통계표 엑셀을 고릅니다. 날짜가 1행에 월별로 적힌 시트를 <b>자동으로 찾습니다.</b></li>
+        <li>몇 초 뒤 오른쪽에 대시보드가 나타납니다.</li>
+      </ol>
+      <div class="note tip"><b>.xlsx 파일만 올릴 수 있습니다.</b> 파일이 한셀(.cell), 예전 엑셀(.xls), 구글 스프레드시트라면
+        <b>다른 이름으로 저장 → 파일 형식 "Excel 통합 문서(*.xlsx)"</b>로 바꿔서 올려 주세요.
+        구글 스프레드시트는 <b>파일 → 다운로드 → Microsoft Excel(.xlsx)</b>입니다.</div>
+      <h3>올린 뒤 꼭 볼 곳: 🔍 데이터 점검</h3>
+      <p>왼쪽에 <span class="ui">🔍 데이터 점검 · 39/39 항목 찾음 ✅</span>처럼 나오면 정상입니다.
+        <b>⚠</b> 표시가 나오면 프로그램이 엑셀에서 찾지 못한 항목 목록이 펼쳐집니다. 이 경우에도 나머지 화면은 그대로 쓸 수 있고,
+        못 찾은 항목의 그래프 칸에만 안내 문구가 나옵니다.</p>
+    </section>
+
+    <section id="layout">
+      <h2><span class="n">3</span>화면 구성</h2>
+      <div class="screen" aria-label="화면 배치 그림">
+        <div class="side">
+          <div>엑셀 파일 올리기</div>
+          <div>🔍 데이터 점검</div>
+          <div>조회 조건<br>기준월 · 조회기간</div>
+          <div>환경설정<br>적정선 · 확인 기준</div>
+          <div>보고서 내보내기</div>
+        </div>
+        <div class="main">
+          <div class="banner">경영통계 대시보드 · 기준월 · 조회기간 · 파일 이름</div>
+          <div class="tabs"><span>개요</span><span>환자·병상</span><span>수익</span><span>비용</span><span>약품</span><span>사용자 정의 통계</span></div>
+          <div>자동 요약 &nbsp;|&nbsp; 확인 필요 항목</div>
+          <div>핵심 지표 카드 6개 (전월·전년 대비, 13개월 추이)</div>
+          <div>그래프 · 상세 표</div>
+        </div>
+      </div>
+      <p><b>왼쪽</b>에서 파일과 조건을 고르고, <b>오른쪽</b>에서 결과를 봅니다. 왼쪽 위 <span class="ui">«</span>를 누르면 왼쪽 칸을 접어 화면을 넓게 쓸 수 있습니다.</p>
+    </section>
+
+    <section id="tabs">
+      <h2><span class="n">4</span>탭별 내용</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>탭</th><th>보여 주는 것</th></tr></thead>
+        <tbody>
+          <tr><td>🏠 개요</td><td>자동 요약 문장, 확인 필요 항목, 핵심 지표 카드 6개(월말 재원환자, 병상가동율, 실입원수, 총진료비, 재활치료, 인건비), 즐겨찾기 항목</td></tr>
+          <tr><td>🛏️ 환자·병상</td><td>월말 재원환자(보험별), 병상가동율(적정선 점선 표시), 입원·퇴원, 환자군(A1~A7), 상세 표</td></tr>
+          <tr><td>💰 수익</td><td>총진료비 추이, 보험별 비중, 입원·외래 청구, 인당 진료비, 재활치료(코드별), 한의사별(가명), 상세 표</td></tr>
+          <tr><td>🧾 비용</td><td>주요 비용 추이와 구성, 인건비, 관리비, 식자재·식단가, 간병·위생소모품 손익, 의약품, 상세 표</td></tr>
+          <tr><td>💊 약품</td><td>약품 처방 원 데이터 시트로 진료과별 처방금액, 상위 10개 약품을 자동 계산하고 엑셀 소계와 맞는지 검산</td></tr>
+          <tr><td>🧩 사용자 정의 통계</td><td>통계표의 <b>모든 항목</b> 중 원하는 것을 골라 비교, 즐겨찾기 등록</td></tr>
+        </tbody>
+      </table></div>
+      <p>증감 표시는 국내 관례를 따릅니다: <span class="up">▲ 빨강 = 증가</span>, <span class="dn">▼ 파랑 = 감소</span>.
+        카드 오른쪽 작은 선은 최근 13개월 추이입니다.</p>
+      <p>표는 첫 열(항목 이름)이 고정되고, 열 머리글을 누르면 정렬, 표 오른쪽 위 돋보기로 검색할 수 있습니다.</p>
+    </section>
+
+    <section id="alerts">
+      <h2><span class="n">5</span>자동 요약과 확인 필요 항목</h2>
+      <p><b>자동 요약</b>은 기준월의 주요 숫자를 전월·전년 동월과 비교해 문장으로 정리합니다. 보고서 첫머리에 그대로 쓸 수 있습니다.</p>
+      <p><b>확인 필요 항목</b>은 눈여겨볼 숫자를 자동으로 골라 줍니다.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>표시</th><th>뜻</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip bad">적정선 미달</span></td><td>병상가동율이 적정선(기본 95%)보다 낮음</td></tr>
+          <tr><td><span class="chip bad">증가</span> <span class="chip bad">감소</span></td><td>총진료비·청구금액·인건비 등이 직전 12개월 평균보다 ±10% 이상 변함</td></tr>
+          <tr><td><span class="chip bad">재활 코드 급변</span></td><td>재활치료 수가코드 금액이 전월보다 ±30% 이상 변함 (500만 원 이상 항목)</td></tr>
+          <tr><td><span class="chip warn">미입력 의심</span></td><td>0이 나올 수 없는 항목(인건비, 총진료비 등)이 0임. 값은 그대로 두고 그래프에서만 빈칸 처리</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="options">
+      <h2><span class="n">6</span>조회 조건 바꾸기</h2>
+      <ul>
+        <li><span class="ui">기준월</span> 분석할 달입니다. 바꾸면 요약·카드·표가 모두 그 달 기준으로 바뀝니다.</li>
+        <li><span class="ui">조회기간</span> 그래프와 표에 보여 줄 기간(3·6·12개월)입니다.</li>
+        <li><span class="ui">병상가동율 적정선(%)</span> 그래프의 점선과 "적정선 미달" 판단 기준입니다.</li>
+        <li><span class="ui">확인 필요 기준(±%)</span> 12개월 평균과 얼마나 달라야 "확인 필요"로 볼지 정합니다.</li>
+      </ul>
+      <p>바꾼 조회기간·적정선·확인 기준·즐겨찾기는 <b>이 PC의 이 인터넷 창에 저장</b>되어 다음에 열어도 유지됩니다.
+        바꾼 직후 바로 창을 닫으면 저장되지 않을 수 있으니 몇 초 뒤에 닫아 주세요. 다른 PC나 다른 브라우저에서는 따로 저장됩니다.</p>
+    </section>
+
+    <section id="export">
+      <h2><span class="n">7</span>보고서 내보내기</h2>
+      <p>왼쪽 아래 <b>보고서 내보내기</b>에 버튼이 있습니다.</p>
+      <ul>
+        <li><span class="ui">📥 엑셀 보고서</span> 요약·핵심지표·환자_병상·수익·비용 시트로 된 엑셀 파일을 받습니다. 숫자는 원래 값 그대로입니다.</li>
+        <li><span class="ui">🖨 인쇄용 보고서 (PDF 저장)</span> 받은 파일을 열고 <b>인쇄 → 대상 "PDF로 저장"</b>을 고르면 PDF가 됩니다.</li>
+        <li>각 표 아래 <span class="ui">⬇ 엑셀로 받기</span>로 그 표만 엑셀로 받을 수 있습니다.</li>
+        <li>그래프 위에 마우스를 올리면 오른쪽 위에 📷 아이콘이 나옵니다. 누르면 그래프를 그림(PNG)으로 저장합니다.</li>
+      </ul>
+    </section>
+
+    <section id="favorites">
+      <h2><span class="n">8</span>자주 보는 항목 고정</h2>
+      <ol class="steps">
+        <li><span class="ui">🧩 사용자 정의 통계</span> 탭에서 보고 싶은 항목을 고릅니다.</li>
+        <li><span class="ui">⭐ 즐겨찾기에 추가</span>를 누릅니다.</li>
+        <li><span class="ui">🏠 개요</span> 탭 아래에 당월·전월·전년 비교 표로 나옵니다.</li>
+      </ol>
+      <p>엑셀에 새 항목(줄)을 추가하면 이 탭에 <b>자동으로</b> 나타납니다. 따로 요청하지 않아도 됩니다.</p>
+    </section>
+
+    <section id="faq">
+      <h2><span class="n">9</span>문제가 생기면</h2>
+      <dl class="faq">
+        <div><dt>"열지 못했습니다" 또는 화면이 계속 로딩만 돼요.</dt>
+          <dd>인터넷 연결을 확인하고 <b>새로고침(F5)</b>해 주세요. 병원 방화벽이 <code>cdn.jsdelivr.net</code>, <code>pypi.org</code>를 막고 있으면 열리지 않습니다. 이 경우 전산 담당자에게 문의하시거나, PC 설치판을 요청해 주세요.</dd></div>
+        <div><dt>파일 고르는 창에 엑셀 파일이 안 보여요.</dt>
+          <dd>파일이 .xlsx가 아닌 경우입니다. 위 <a href="#upload">2. 엑셀 올리기</a>의 안내대로 .xlsx로 저장해서 올려 주세요.</dd></div>
+        <div><dt>"숫자가 하나도 읽히지 않았습니다"가 나와요.</dt>
+          <dd>엑셀에서 파일을 한 번 열고 <b>저장</b>한 뒤 다시 올려 주세요. 수식 결과가 저장되지 않은 파일일 때 생깁니다.</dd></div>
+        <div><dt>숫자가 실제와 달라요.</dt>
+          <dd>어느 탭의 어떤 항목이, 어느 달에, 엑셀 값과 얼마나 다른지 알려 주세요. 데이터 값 자체는 보내지 않으셔도 됩니다.</dd></div>
+        <div><dt>화면이 이상해졌어요.</dt>
+          <dd>새로고침(F5) 후 엑셀을 다시 올려 주세요.</dd></div>
+      </dl>
+    </section>
+
+    <section id="feedback">
+      <h2><span class="n">10</span>의견 보내기</h2>
+      <p>써 보시고 아래 내용을 알려 주시면 반영하겠습니다. 고친 내용은 <b>같은 주소에 자동으로</b> 반영되므로 새로 설치할 것이 없습니다.</p>
+      <ul>
+        <li>불편한 점, 찾기 어려운 메뉴</li>
+        <li>틀린 숫자 (탭·항목·달)</li>
+        <li>더 보고 싶은 통계, 위로 올리고 싶은 항목</li>
+        <li><b>🔍 데이터 점검</b>에 ⚠가 나오면 <b>그 목록 화면만</b> 캡처해서 보내 주세요.</li>
+      </ul>
+      <div class="note safe"><b>부탁드립니다</b> · 병원 엑셀 파일 자체나 환자·직원 정보가 보이는 화면은 보내지 말아 주세요.
+        생성형 AI(ChatGPT 등)에도 병원 파일을 올리지 말아 주세요.</div>
+    </section>
+
+    <footer>영남이공대학교 캡스톤 디자인 · 경영통계 대시보드 버전 0.2.0</footer>
+  </main>
+</div>
+
+<script>
+document.getElementById("copy").addEventListener("click", function () {
+  var btn = this, text = document.getElementById("url").textContent;
+  function done(msg) { btn.textContent = msg; setTimeout(function () { btn.textContent = "주소 복사"; }, 1800); }
+  try {
+    navigator.clipboard.writeText(text).then(function () { done("복사됨"); }, function () { selectUrl(); done("선택됨 · Ctrl+C"); });
+  } catch (e) { selectUrl(); done("선택됨 · Ctrl+C"); }
+  function selectUrl() {
+    var r = document.createRange(); r.selectNodeContents(document.getElementById("url"));
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+});
+</script>
+</body>
+</html>

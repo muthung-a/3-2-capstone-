@@ -15,6 +15,7 @@ def test_build_copies_app_files_only(tmp_path):
     mapping = json.loads((out / "files.json").read_text(encoding="utf-8"))
     assert list(mapping) == files
     assert (out / "index.html").exists() and (out / ".nojekyll").exists()
+    assert (out / "guide.html").exists()  # 사용 설명서
     for url in mapping.values():
         assert (out / url).exists()
         # GitHub Pages 배포는 점(.)으로 시작하는 폴더·파일을 빼므로 사이트 경로에는 없어야 함

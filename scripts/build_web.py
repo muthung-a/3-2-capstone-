@@ -52,6 +52,7 @@ def build(out: Path, root: Path = ROOT) -> list[str]:
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(root / rel, target)
     shutil.copyfile(root / "web" / "index.html", out / "index.html")
+    shutil.copyfile(root / "web" / "guide.html", out / "guide.html")  # 사용 설명서 (…/guide.html)
     # {브라우저 안 파이썬에서의 경로: 사이트 주소 경로}
     mapping = {rel: url_path(rel) for rel in files}
     (out / "files.json").write_text(json.dumps(mapping, ensure_ascii=False, indent=1), encoding="utf-8")

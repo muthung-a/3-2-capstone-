@@ -7,6 +7,7 @@
 - 과제: "통계 보고서를 매달 손으로 작성하고 있어서 자동화하고 싶다"
 - 쓰는 방법은 두 가지이고, 어느 쪽이든 **데이터는 PC 밖으로 나가지 않습니다.**
   - **웹판**: 설치 없이 링크만 열면 됩니다. → https://muthung-a.github.io/3-2-capstone-/ ([웹판 설명](#웹판-설치-없이-병원에서-실제-데이터로-써-보기--github-pages))
+  - 📖 **사용 설명서**: https://muthung-a.github.io/3-2-capstone-/guide.html (원본: [web/guide.html](web/guide.html))
   - **설치판**: 병원 PC에 설치해서 씁니다. 인터넷이 막힌 PC에서도 됩니다. (아래 2·3번)
 
 > ⚠ 이 저장소에는 병원 데이터(엑셀)가 들어 있지 않습니다. 개발에는 병원 양식으로 만든 **가상 데이터**만 썼습니다.
@@ -210,6 +211,7 @@ py -3.12 -m venv .venv
 ├─ scripts/install.py  설치 과정 (설치.bat·실행.bat 이 부름. 한글 안내 출력)
 ├─ scripts/build_web.py 웹판에 올릴 파일만 _site 폴더로 모음
 ├─ web/index.html      웹판 첫 화면 (stlite 로 브라우저 안에서 app.py 실행)
+├─ web/guide.html      사용 설명서 (웹판 사이트의 guide.html)
 ├─ .github/workflows/  GitHub 에 올리면 웹판을 자동 배포 (pages.yml)
 ├─ 설치.bat            더블클릭 설치 (처음 한 번)
 └─ 실행.bat            더블클릭 실행
